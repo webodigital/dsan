@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+	<!-- begin::Head -->
+	<head>
+		<meta charset="utf-8" />
+		<title><%= vendor %> | <%= title %></title>
+		<meta name="description" content="Latest updates and statistic charts">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+
+		<%- include('common/header.ejs') %>
+	</head>
+
+	<!-- end::Head -->
+
+	<!-- begin::Body -->
+	<body class="m--skin- m-header--fixed m-header--fixed-mobile m-aside-left--enabled m-aside-left--skin-dark m-aside-left--fixed m-aside-left--offcanvas m-footer--push m-aside--offcanvas-default">
+
+		<!-- begin:: Page -->
+		<div class="m-grid m-grid--hor m-grid--root m-page">
+			<div class="m-grid__item m-grid__item--fluid m-grid m-grid--hor m-login m-login--signin m-login--2 m-login-2--skin-2" id="m_login" style="background-image: url(<%= base_url %>/app/media/img//bg/bg-3.jpg);">
+				<div class="m-grid__item m-grid__item--fluid	m-login__wrapper">
+					<div class="m-login__container">
+						<div class="m-login__logo">
+							<a href="#">
+								<img src="<%= base_url %>/app/media/img/logos/logo-1.png">
+							</a>
+						</div>
+						<%- include(path) %>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- end:: Page -->
+
+		<!--begin::Global Theme Bundle -->
+		<script src="<%= base_url %>/vendors/base/vendors.bundle.js" type="text/javascript"></script>
+		<script src="<%= base_url %>/demo/default/base/scripts.bundle.js" type="text/javascript"></script>
+
+		<!--end::Global Theme Bundle -->
+
+		<!--begin::Page Scripts -->
+        
+            <script>
+                var SnippetLogin = function() {
+                    var e = $("#m_login"),
+                        i = function(e, i, a) {
+                            var l = $('<div class="m-alert m-alert--outline alert alert-' + i + ' alert-dismissible" role="alert">\t\t\t<button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>\t\t\t<span></span>\t\t</div>');
+                            e.find(".alert").remove(), l.prependTo(e), mUtil.animateClass(l[0], "fadeIn animated"), l.find("span").html(a)
+                        },
+                        a = function() {
+                            e.removeClass("m-login--forget-password"), e.removeClass("m-login--signup"), e.addClass("m-login--signin"), mUtil.animateClass(e.find(".m-login__signin")[0], "flipInX animated")
+                        },
+                        l = function() {
+                            $("#m_login_forget_password").click(function(i) {
+                                i.preventDefault(), e.removeClass("m-login--signin"), e.removeClass("m-login--signup"), e.addClass("m-login--forget-password"), mUtil.animateClass(e.find(".m-login__forget-password")[0], "flipInX animated")
+                            }), $("#m_login_forget_password_cancel").click(function(e) {
+                                e.preventDefault(), a()
+                            }), $("#m_login_signup").click(function(i) {
+                                i.preventDefault(), e.removeClass("m-login--forget-password"), e.removeClass("m-login--signin"), e.addClass("m-login--signup"), mUtil.animateClass(e.find(".m-login__signup")[0], "flipInX animated")
+                            }), $("#m_login_signup_cancel").click(function(e) {
+                                e.preventDefault(), a()
+                            })
+                        };
+                    return {
+                        init: function() {
+                            l(), $("#m_login_signin_submit").click(function(e) {
+                                e.preventDefault();
+                                var a = $(this),
+                                    l = $(this).closest("form");
+                                l.validate({
+                                    rules: {
+                                        zoom_admin_username: {
+                                            required: !0
+                                        },
+                                        zoom_admin_password: {
+                                            required: !0
+                                        }
+                                    },
+                                    messages: {
+                                        zoom_admin_username: {
+                                            required: "Please enter username"
+                                        },
+                                        zoom_admin_password: {
+                                            required: "Please enter password"
+                                        }
+                                    }
+                                }), l.valid() && (a.addClass("m-loader m-loader--right m-loader--light").attr("disabled", !0), l.ajaxSubmit({
+                                    url: "admin/login",
+                                    type: 'POST',
+                                    success: function(e, t, r, s) {
+                                        var response = JSON.parse(e);
+                                        if(response.response)
+                                        {
+                                            i(l, "success", response.message)    
+                                            setTimeout(function() {
+                                                window.location.replace("<%= base_url %>/dashboard"); 
+                                            }, 2000);                  
+                                        }
+                                        else
+                                        {
+                                            setTimeout(function() {
+                                                a.removeClass("m-loader m-loader--right m-loader--light").attr("disabled", !1), i(l, "danger", response.message)
+                                            }, 2e3)
+                                        }
+                                    }
+                                }))
+                            })
+                        }
+                    }
+                }();
+                jQuery(document).ready(function() {
+                    SnippetLogin.init()
+                });
+                
+            </script>
+
+		<!--end::Page Scripts -->
+	</body>
+
+	<!-- end::Body -->
+</html>

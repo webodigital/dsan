@@ -1,0 +1,14 @@
+{
+  "name": "dsan",
+  "version": "1.0.0",
+  "description": "dsan timer clock desktop app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Sarvesh Chauhan",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^8.2.3"
+  }
+}
