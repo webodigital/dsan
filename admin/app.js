@@ -10,6 +10,7 @@ let indexRouter      = require('./application/routes/indexRoutes'),
     adminRoutes      = require('./application/routes/adminRoutes'),
     dashboardRoutes  = require('./application/routes/dashboardRoutes'),
     mettingRoutes    = require('./application/routes/mettingRoutes');
+    apiRoutes        = require('./application/routes/apiRoutes');
 
 var app = express();
 
@@ -30,6 +31,7 @@ app.use('/', indexRouter);
 app.use('/admin', adminRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/meeting', mettingRoutes);
+app.use('/api', apiRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

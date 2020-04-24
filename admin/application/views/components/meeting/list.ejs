@@ -49,7 +49,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="meetingId" class="form-control-label">Meeting Id:</label>
-                                <input type="text" class="form-control" id="meetingId" name="meetingId">
+                                <input type="text" class="form-control" id="meetingId" name="meetingId" placeholder="Please enter meetingId">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -76,6 +76,18 @@
                                 <input type="text" class="form-control" id="meetingParticipant" name="meetingParticipant" placeholder="Please enter total participant">
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="meetingPassword" class="form-control-label">Password:</label>
+                                <input type="password" class="form-control" id="meetingPassword" name="meetingPassword" placeholder="Please enter password">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="meetingConfirmPassword" class="form-control-label">Confirm Password:</label>
+                                <input type="password" class="form-control" id="meetingConfirmPassword" name="meetingConfirmPassword" placeholder="Please enter Confirm Password">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -90,7 +102,7 @@
 <!--end:: Addb Meeting Modal-->
 
 
-<!--begin:: Add Meeting Modal-->
+<!--begin:: Update Meeting Modal-->
 
 <div class="modal fade" id="editMeetingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -152,4 +164,4 @@
     </div>
 </div>
 
-<!--end:: Addb Meeting Modal-->
+<!--end:: Update Meeting Modal-->

@@ -1,4 +1,5 @@
 var db = require('../../config');
+var md5 = require('md5');
 var empty = require('is-empty');
 var meeting_ctrl = {};
 
@@ -73,7 +74,8 @@ meeting_ctrl.add = function(req, res)
         mt_date        : req.body.meetingDate,
         mt_time        : req.body.meetingTime,
         mt_duration    : req.body.meetingDuration,
-        mt_participant : req.body.meetingParticipant 
+        mt_participant : req.body.meetingParticipant ,
+        mt_password    : md5(req.body.meetingPassword)
     };
     
     db.query(sql, meetingData, function(err, result){
@@ -184,16 +186,6 @@ meeting_ctrl.update = function(req, res)
             res.end();
         }
     });
-}
-
-meeting_ctrl.testing = function(req, res)
-{
-	var message = {
-		response : false,
-		message  : 'Something went wrong!'
-	}
-	res.write(JSON.stringify(message));
-	res.end();
 }
 
 

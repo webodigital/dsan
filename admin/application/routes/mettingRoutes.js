@@ -13,24 +13,15 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/list', function(req,res) {
-  //if(req.session.is_auth)
-  //{
+  if(req.session.is_auth)
+  {
     metting_ctrl.list(req,res)
-  //}
- // else{
-  //  res.redirect('/')
-  //}
+  }
+ else{
+   res.redirect('/')
+  }
 })
 
-router.post('/testing', function(req,res) {
-  //if(req.session.is_auth)
-  //{
-    metting_ctrl.testing(req,res)
-  //}
- // else{
-  //  res.redirect('/')
-  //}
-})
 
 router.post('/add', function(req,res) {
   if(req.session.is_auth)

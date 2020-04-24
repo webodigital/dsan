@@ -37,7 +37,7 @@
 								<h3 class="m-subheader__title m-subheader__title--separator">Meeting</h3>
 								<ul class="m-subheader__breadcrumbs m-nav m-nav--inline">
 									<li class="m-nav__item m-nav__item--home">
-										<a href="<%= base_url %>/dashboard" class="m-nav__link m-nav__link--icon">
+										<a href="<%= base_url %>/meeting" class="m-nav__link m-nav__link--icon">
 											<i class="m-nav__link-icon la la-home"></i>
 										</a>
 									</li>
@@ -95,6 +95,13 @@
 							meetingParticipant: {
 								required: true,
 								number: true
+							},
+							meetingPassword: {
+								required: true
+							},
+							meetingConfirmPassword: {
+								required: true,
+               	 				equalTo: "#meetingPassword"
 							}
 						},
 						messages: {
@@ -116,20 +123,29 @@
 							meetingParticipant: {
 								required: "Please enter total participant",
 								number: "Please enter valid number"
+							},
+							meetingPassword: {
+								required: "Please enter password"
+							},
+							meetingConfirmPassword: {
+								required: "Please enter confirm password",
+								equalTo: "Please enter the same password as above"
 							}
+
 						}
 						, invalidHandler:function(e, r) {
 							mUtil.scrollTop()
 						}
 						, submitHandler:function(form) {
 
-							var data = {};
-							data.meetingName = $("#meetingName").val();
-							data.meetingId = $("#meetingId").val();	
-							data.meetingDate = $("#meetingDate").val();
-							data.meetingTime = $("#meetingTime").val();
-							data.meetingDuration = $("#meetingDuration").val();
+							var data 				= {};
+							data.meetingName 		= $("#meetingName").val();
+							data.meetingId 			= $("#meetingId").val();	
+							data.meetingDate 		= $("#meetingDate").val();
+							data.meetingTime 		= $("#meetingTime").val();
+							data.meetingDuration 	= $("#meetingDuration").val();
 							data.meetingParticipant = $("#meetingParticipant").val();
+							data.meetingPassword 	= $("#meetingPassword").val();
 						
 							$.ajax({
 								type: 'POST',
@@ -242,7 +258,7 @@
 										var currentDate = q.getFullYear() + "-" + (q.getMonth()+1) + "-" + q.getDate();
 										var date   = new Date(currentDate);
 										var mydate = new Date(t.mt_date);
-										if(date  >mydate)
+										if(date > mydate)
 										{
 											return '<a href="javascript:void(0)" class="btn btn-outline-brand m-btn m-btn--icon btn-lg m-btn--icon-only m-btn--pill m-btn--air" ><i class="la la-power-off"></i></a>'
 										}
