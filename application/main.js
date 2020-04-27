@@ -9,11 +9,13 @@ let mainWindow;
 app.on('ready', function(){
     // Create new window
     mainWindow = new BrowserWindow({
-        // frame: false,
-        // height: 700,
-        // resizable: false,
-        // width: 368
+        frame: true,
+        resizable: true,
+        icon: __dirname + '/app/img/logo.png'
     });
+
+    mainWindow.setOverlayIcon(__dirname + '/app/img/logo.png', 'DSAN Timer App');
+
 
     // Load html into window
     // mainWindow.loadURL(url.format({
@@ -33,22 +35,7 @@ app.on('ready', function(){
 // Create menu template
 // const mainMenuTemplate = [
 //     {
-//         label: 'File',
-//         submenu: [
-//             {
-//                 label: 'Add Item'
-//             },
-//             {
-//                 label: 'Clear Item'
-//             },
-//             {
-//                 label: 'Close',
-//                 accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Ctrl+Q',
-//                 click(){
-//                     app.quit();
-//                 }
-//             }
-//         ]
+//         label: ''
 //     }
 // ];
 

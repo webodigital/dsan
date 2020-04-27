@@ -115,13 +115,14 @@
           meetingId = $("#meetingId").val();
           meetingPassword = $("#meetingPassword").val();
           $.ajax({
-              url: "http://127.0.0.1:3000/api/meeting-details",
+              url: "http://35.245.107.78/api/meeting-details",
               data: {meetingId: meetingId, meetingPassword: meetingPassword},
               type: 'POST',
               success: function(response) {
                 response = JSON.parse(response);
                 if (response.response) 
                 {
+                  
                   $("#danger").removeClass('show').addClass('hide');
                   $("#success").html(response.message);
                   $("#success").removeClass('hide').addClass('show');
@@ -131,7 +132,10 @@
                     $("#msgDanger").removeClass('show').addClass('hide');
                     $("#msgSuccess").html(response.message);
                     $("#msgSuccess").removeClass('hide').addClass('show');
-                    $("#messageModal").modal('show');
+                    if(response.instant)
+                    {
+                      $("#messageModal").modal('show');
+                    }
                   }, 1000);
 
                   setTimeout(function() {

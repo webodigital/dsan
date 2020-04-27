@@ -11,7 +11,7 @@
             </div>
         </div>
         <div class="col-md-6 text-right">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addMeetingModal"> Add Meeting</button>
+            <button type="button" class="btn btn-primary" onclick="addMeeting()"> Add Meeting</button>
         </div>
     </div>
     <div class="m-portlet__body">
@@ -55,19 +55,19 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="meetingDate" class="form-control-label">Meeting Date</label>
-                                <input type="text" class="form-control" id="meetingDate" name="meetingDate" readonly placeholder="Select metting date" />
+                                <input type="text" class="form-control" id="meetingDate" name="meetingDate" readonly placeholder="Please Select metting date" />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="meetingTime" class="form-control-label">Meeting Time</label>
-                                <input type="text" class="form-control" id="meetingTime" name="meetingTime" readonly placeholder="Select metting Time" value="10:00:00 AM" />
+                                <input type="text" class="form-control" id="meetingTime" name="meetingTime" readonly placeholder="Please Select metting Time" value="10:00:00 AM" />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="meetingDuration" class="form-control-label">Meeting Duration:</label>
-                                <input type="text" class="form-control" id="meetingDuration" name="meetingDuration" value="0:05:00">
+                                <input type="text" class="form-control" id="meetingDuration" name="meetingDuration" value="0:05:00" readonly placeholder="Please Select meeting duration">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -92,7 +92,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary" id="addMeetingBtn">Submit</button>
                 </div>
             </form>
         </div>
@@ -125,25 +125,25 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="editMeetingId" class="form-control-label">Meeting Id:</label>
-                                <input type="text" class="form-control" id="editMeetingId" name="editMeetingId">
+                                <input type="text" class="form-control" id="editMeetingId" name="editMeetingId" readonly placeholder="Please enter meetingId">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="editMeetingDate" class="form-control-label">Meeting Date</label>
-                                <input type="text" class="form-control" id="editMeetingDate" name="editMeetingDate" readonly placeholder="Select metting date" />
+                                <input type="text" class="form-control" id="editMeetingDate" name="editMeetingDate" readonly placeholder="Please Select metting date" />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="editMeetingTime" class="form-control-label">Meeting Time</label>
-                                <input type="text" class="form-control" id="editMeetingTime" name="editMeetingTime" readonly placeholder="Select metting Time" value="10:00:00 AM" />
+                                <input type="text" class="form-control" id="editMeetingTime" name="editMeetingTime" readonly placeholder="Please Select metting Time" />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="editMeetingDuration" class="form-control-label">Meeting Duration:</label>
-                                <input type="text" class="form-control" id="editMeetingDuration" name="editMeetingDuration" value="0:05:00">
+                                <input type="text" class="form-control" id="editMeetingDuration" name="editMeetingDuration" readonly placeholder="Please Select meeting duration">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -157,7 +157,7 @@
                 <div class="modal-footer">
                     <input type="hidden" id="editMeetingUpdateId" name="editMeetingUpdateId">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="submit" class="btn btn-primary" id="updateMeetingBtn">Update</button>
                 </div>
             </form>
         </div>
@@ -165,3 +165,52 @@
 </div>
 
 <!--end:: Update Meeting Modal-->
+
+<!--begin:: Monitor Modal-->
+
+<div class="modal fade" id="monitorMeetingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Meeting Monitor(<span id="monitorMeetingTitle"></span>)</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="digital_watch_container">
+                    <div id="timer" class="timer well">
+                        <div class="clock-wrapper">
+                            <span class="hours">00</span>
+                            <span class="dots">:</span>
+                            <span class="minutes">00</span>
+                            <span class="dots">:</span>
+                            <span class="seconds">00</span>
+                        </div>
+                    </div>
+                    <div class="resume_start_btn">
+                        <div class="toggle green" onClick="onClock()">
+                          <input type="checkbox">
+                          <span class="button"></span>
+                        </div>
+                        <div class="toggle yellow" onClick="pauseClock()">
+                          <input type="checkbox">
+                          <span class="button"></span>
+                        </div>
+                        <div class="toggle red" onClick="stopClock()">
+                          <input type="checkbox">
+                          <span class="button"></span>
+                        </div>
+                        <div class="d_logo">
+                          <img src="<%= base_url %>/demo/default/base/d_logo.png">
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="monitorMeetingId" id="monitorMeetingId">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--end:: Monitor Modal-->

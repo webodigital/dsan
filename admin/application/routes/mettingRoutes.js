@@ -63,6 +63,26 @@ router.post('/update', function(req,res) {
   }
 })
 
+router.post('/monitor', function(req,res) {
+  // if(req.session.is_auth)
+  // {
+    metting_ctrl.monitor(req,res)
+  // }
+  // else{
+  //   res.redirect('/')
+  // }
+})
+
+router.post('/change-cstatus', function(req,res) {
+  // if(req.session.is_auth)
+  // {
+    metting_ctrl.changeCstatus(req,res)
+  // }
+  // else{
+  //   res.redirect('/')
+  // }
+})
+
 
 
 module.exports = router;
