@@ -1,5 +1,6 @@
 const url = require('url');
 const path = require('path');
+var ex = require('express')();
 
 const {app, BrowserWindow, Menu} = require('electron');
 
@@ -10,33 +11,28 @@ app.on('ready', function(){
     // Create new window
     mainWindow = new BrowserWindow({
         frame: true,
-        resizable: true,
+        resizable: false,
+        width: 450,
+        height: 290,
         icon: __dirname + '/app/img/logo.png'
     });
 
     mainWindow.setOverlayIcon(__dirname + '/app/img/logo.png', 'DSAN Timer App');
 
-
-    // Load html into window
-    // mainWindow.loadURL(url.format({
-    //     pathname : path.join(__dirname, '/app/index.html'),
-    //     protocol : 'file:',
-    //     slashes  : true
-    // }));
-
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
     // Build menu from template
-    // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     // Insert menu
-    // Menu.setApplicationMenu(mainMenu);
+    Menu.setApplicationMenu(mainMenu);
+
 });
 
 // Create menu template
-// const mainMenuTemplate = [
-//     {
-//         label: ''
-//     }
-// ];
+const mainMenuTemplate = [
+    {
+        label: ''
+    }
+];
 
   

@@ -21,14 +21,26 @@ api_ctrl.meetingDetails = function(req, res)
         else
         {
             if(result[0].mt_status == 'Active'){
-                if(result[0].mt_cstatus == 'Suspend')
+                if(result[0].mt_cstatus == 'Suspend' || result[0].mt_cstatus == 'Pause')
                 {
-                    var message = {
-                        response : false,
-                        message  : 'Sorry, Your meeting has been suspended by Host.'
+                    if(result[0].mt_cstatus == 'Pause')
+                    {
+                        var message = {
+                            response : false,
+                            message  : 'Sorry, Your meeting has been paused by Host.'
+                        }
+                        res.write(JSON.stringify(message));
+                        res.end();
                     }
-                    res.write(JSON.stringify(message));
-                    res.end();
+                    else
+                    {
+                        var message = {
+                            response : false,
+                            message  : 'Sorry, Your meeting has been suspended by Host.'
+                        }
+                        res.write(JSON.stringify(message));
+                        res.end();
+                    }
                 }
                 else
                 {
@@ -52,40 +64,101 @@ api_ctrl.meetingDetails = function(req, res)
 
                             if(time > myTime)
                             {
-                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
-                                var ed = expireDuration.split(':');
-                                var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
+                                const sql = "SELECT * FROM `zc_timing` WHERE `mt_id` = ? ORDER BY tm_id DESC limit 1";
+                                db.query({ sql, values: [result[0].mt_id] }, function (error1, result1) {
+                                    if(empty(result1))
+                                    {
+                                        var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                        var ed = expireDuration.split(':');
+                                        var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
 
-                                var hms = result[0].mt_duration;
-                                var a = hms.split(':');
-                                var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]) - 60; 
+                                        var hms = result[0].mt_duration;
+                                        var a = hms.split(':');
+                                        var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]) - 60; 
 
-                                if(expireSeconds <= seconds)
-                                {
-                                    var hms = result[0].mt_duration;
-                                    var a = hms.split(':');
-                                    var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
+                                        if(expireSeconds <= seconds)
+                                        {
+                                            var hms = result[0].mt_duration;
+                                            var a = hms.split(':');
+                                            var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
 
-                                    var message = {
-                                        response   : true,
-                                        instant    : false,
-                                        message    : 'Please wait, the meeting host will let you in soon.',
-                                        data       : result[0],
-                                        mseconds   : seconds - expireSeconds,
-                                        afterstart : ( 1 * 1000 )
+                                            var message = {
+                                                response   : true,
+                                                instant    : false,
+                                                message    : 'Please wait, the meeting host will let you in soon.',
+                                                data       : result[0],
+                                                mseconds   : seconds - expireSeconds,
+                                                afterstart : ( 0 )
+                                            }
+                                            res.write(JSON.stringify(message));
+                                            res.end();
+                                        }
+                                        else
+                                        {
+                                            var message = {
+                                                response : false,
+                                                message  : 'Meeting is over now.'
+                                            }
+                                            res.write(JSON.stringify(message));
+                                            res.end();
+                                        }   
                                     }
-                                    res.write(JSON.stringify(message));
-                                    res.end();
-                                }
-                                else
-                                {
-                                    var message = {
-                                        response : false,
-                                        message  : 'Meeting is over now.'
+                                    else
+                                    {
+                                        if(result1[0].tm_status == 'Suspend')
+                                        {
+                                            var message = {
+                                                response : false,
+                                                message  : 'Sorry, Your meeting has been suspended by Host.'
+                                            }
+                                            res.write(JSON.stringify(message));
+                                            res.end();
+                                        }
+                                        else
+                                        {
+                                            if(result1[0].tm_status == 'On')
+                                            {
+                                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result1[0].tm_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                                var ed = expireDuration.split(':');
+                                                var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
+
+                                                var seconds = result1[0].tm_remaining_sec; 
+
+                                                if(expireSeconds <= seconds)
+                                                {
+                                                    var message = {
+                                                        response   : true,
+                                                        instant    : false,
+                                                        message    : 'Please wait, the meeting host will let you in soon.',
+                                                        data       : result[0],
+                                                        mseconds   : seconds - expireSeconds,
+                                                        afterstart : ( 0 )
+                                                    }
+                                                    res.write(JSON.stringify(message));
+                                                    res.end();
+                                                }
+                                                else
+                                                {
+                                                    var message = {
+                                                        response : false,
+                                                        message  : 'Meeting is over now.'
+                                                    }
+                                                    res.write(JSON.stringify(message));
+                                                    res.end();
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var message = {
+                                                    response : false,
+                                                    message  : 'Sorry, Your meeting has been paused by Host.'
+                                                }
+                                                res.write(JSON.stringify(message));
+                                                res.end();
+                                            }
+                                        }
                                     }
-                                    res.write(JSON.stringify(message));
-                                    res.end();
-                                }
+                                }); 
                             }
                             else
                             {

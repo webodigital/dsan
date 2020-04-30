@@ -178,36 +178,40 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="digital_watch_container">
-                    <div id="timer" class="timer well">
-                        <div class="clock-wrapper">
-                            <span class="hours">00</span>
-                            <span class="dots">:</span>
-                            <span class="minutes">00</span>
-                            <span class="dots">:</span>
-                            <span class="seconds">00</span>
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <div class="digital_watch_container center" >
+                            <div id="timer" class="timer well">
+                                <div class="clock-wrapper">
+                                    <span class="hours">00</span>
+                                    <span class="dots">:</span>
+                                    <span class="minutes">00</span>
+                                    <span class="dots">:</span>
+                                    <span class="seconds">00</span>
+                                </div>
+                            </div>
+                            <div class="resume_start_btn">
+                                <div class="toggle green" onClick="onClock()">
+                                  <input type="checkbox">
+                                  <span class="button"></span>
+                                </div>
+                                <div class="toggle yellow" onClick="pauseClock()">
+                                  <input type="checkbox">
+                                  <span class="button"></span>
+                                </div>
+                                <div class="toggle red" onClick="stopClock()">
+                                  <input type="checkbox">
+                                  <span class="button"></span>
+                                </div>
+                                <div class="d_logo">
+                                  <img src="<%= base_url %>/demo/default/base/d_logo.png">
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="resume_start_btn">
-                        <div class="toggle green" onClick="onClock()">
-                          <input type="checkbox">
-                          <span class="button"></span>
-                        </div>
-                        <div class="toggle yellow" onClick="pauseClock()">
-                          <input type="checkbox">
-                          <span class="button"></span>
-                        </div>
-                        <div class="toggle red" onClick="stopClock()">
-                          <input type="checkbox">
-                          <span class="button"></span>
-                        </div>
-                        <div class="d_logo">
-                          <img src="<%= base_url %>/demo/default/base/d_logo.png">
-                        </div>
+                        
+                        <input type="hidden" name="monitorMeetingId" id="monitorMeetingId">
                     </div>
                 </div>
-                
-                <input type="hidden" name="monitorMeetingId" id="monitorMeetingId">
             </div>
         </div>
     </div>

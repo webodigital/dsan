@@ -13,6 +13,8 @@ let indexRouter      = require('./application/routes/indexRoutes'),
     apiRoutes        = require('./application/routes/apiRoutes');
 
 var app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
 app.use(session({secret: 'DSAN Meeting', cookie: { maxAge: 60 * 60 * 1000 }, saveUninitialized: false, resave: false}))
 app.locals.vendorName = 'DSAN';
@@ -49,10 +51,22 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
   
-var listener = app.listen(3000, function(){
+var listener = server.listen(3000, function(){
     console.log('Listening on port ' + listener.address().port); //Listening on port 8888
 });
 
+
+io.on('connection', (socket) => {
+
+  socket.on('meeting-status', (data) => {
+    io.emit('client-meeting-status', data);
+  });
+
+  socket.on('meeting-monitor', (data) => {
+    io.emit('client-meeting-monitor', data);
+  });
+
+});
 
 
 module.db = app;

@@ -72,8 +72,11 @@
 		<!-- end:: Page -->
 
 		<%- include('common/footer.ejs') %>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 		
 		<script type="text/javascript">
+
+			const socket = io.connect('http://35.245.107.78');
 
 			var addMeetingFormControl = {
 				init:function() {
@@ -303,12 +306,11 @@
 									var mydate = new Date(t.mt_date);
 									if(date  >mydate)
 									{
-										// return '<a href="javascript:void(0)" class="m-portlet__nav-link btn m-btn m-btn--hover-brand m-btn--icon m-btn--icon-only m-btn--pill" title="Update Meeting"><i class="la la-edit"></i></a>'
+										return '<a href="javascript:void(0);" ><img alt="Monitor" src="<%= base_url %>/demo/default/base/clock_logo.jpg" style="width: 75px;"></a>'
 									}
 									else
 									{
-										return '<a href="javascript:void(0);" onclick="monitor('+ t.mt_id +')" ><img alt="Monitor" src="<%= base_url %>/demo/default/base/clock_dark.jpg" style="width: 75px;"></a>'
-										// return '<a href="javascript:void(0)" class="m-portlet__nav-link btn m-btn m-btn--hover-brand m-btn--icon m-btn--icon-only m-btn--pill" title="Update Meeting" onclick="editMeeting('+ t.mt_id +')"><i class="la la-edit"></i></a>'
+										return '<a href="javascript:void(0);" onclick="monitor('+ t.mt_id +')" ><img alt="Monitor" src="<%= base_url %>/demo/default/base/clock_logo.jpg" style="width: 75px;"></a>'
 									}
 								}
 							}
@@ -374,6 +376,7 @@
 						response = JSON.parse(data);
 						if(response.response)
 						{   
+							socket.emit('meeting-status', data);
 							$(".meeting_list").mDatatable("reload");
 							toastr.success(response.message);
 						}
@@ -558,7 +561,15 @@
 							}
 							else
 							{
-								startClock(response.mseconds)								
+								if(response.action == 'pause')
+								{
+									startClock(response.mseconds)
+									clear(interval)
+								}
+								else
+								{
+									startClock(response.mseconds)
+								}								
 								$("#monitorMeetingId").val(response.data.mt_id);
 								$("#monitorMeetingTitle").html(response.data.mt_name+' -- '+response.data.mt_mid);
 								$("#monitorMeetingModal").modal('show');
@@ -663,6 +674,7 @@
 				var data = {};
 				data.type = 'meeting pause';
 				data.status = 'On';
+				data.time = hours+':'+minutes+':'+seconds;
 				data.id = $("#monitorMeetingId").val();	
 				$.ajax({
 					type: 'POST',
@@ -674,6 +686,8 @@
 						response = JSON.parse(data);
 						if(response.response)
 						{  
+							countdown()
+							socket.emit('meeting-monitor', data);
 							toastr.success(response.message);
 						}
 						else
@@ -686,7 +700,6 @@
 						toastr.error("Something went wrong!");
 					}
 				});
-				countdown()
 			}
 
 			function countdown() {
@@ -737,10 +750,10 @@
 			}
 
 			function pauseClock() {
-				clear(interval)
 				var data = {};
 				data.type = 'meeting pause';
 				data.status = 'Pause';
+				data.time = hours+':'+minutes+':'+seconds;
 				data.id = $("#monitorMeetingId").val();	
 				$.ajax({
 					type: 'POST',
@@ -752,6 +765,8 @@
 						response = JSON.parse(data);
 						if(response.response)
 						{   
+							clear(interval)
+							socket.emit('meeting-monitor', data);
 							toastr.success(response.message);
 						}
 						else
@@ -799,6 +814,7 @@
 				var data = {};
 				data.type = 'meeting pause';
 				data.status = 'Suspend';
+				data.time = hours+':'+minutes+':'+seconds;
 				data.id = $("#monitorMeetingId").val();	
 				$.ajax({
 					type: 'POST',
@@ -810,6 +826,7 @@
 						response = JSON.parse(data);
 						if(response.response)
 						{   
+							socket.emit('meeting-monitor', data);
 							toastr.error(response.message);
 							$("#monitorMeetingModal").modal('hide');
 						}
