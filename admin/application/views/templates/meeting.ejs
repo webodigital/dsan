@@ -82,9 +82,6 @@
 				init:function() {
 					$("#addMeetingForm").validate( {
 						rules: {
-							meetingName: {
-								required: true
-							},
 							meetingId: {
 								required: true
 							},
@@ -98,7 +95,6 @@
 								required: true
 							},
 							meetingParticipant: {
-								required: true,
 								number: true
 							},
 							meetingPassword: {
@@ -110,9 +106,6 @@
 							}
 						},
 						messages: {
-							meetingName: {
-								required: "Please enter meeting name"
-							},
 							meetingId: {
 								required: "Please enter meeting ID"
 							},
@@ -126,7 +119,6 @@
 								required: "Please enter meeting duration"
 							},
 							meetingParticipant: {
-								required: "Please enter total participant",
 								number: "Please enter valid number"
 							},
 							meetingPassword: {
@@ -192,6 +184,40 @@
 					)
 				}
 			};
+
+			function addMeeting() {
+
+				var data = {};
+				data.type = 'add-meeting';	
+
+				$.ajax({
+					type: 'POST',
+					data: JSON.stringify(data),
+					contentType: 'application/json',
+					url: '<%= base_url %>/meeting/add-modal',
+					success: function(data) 
+					{
+						response = JSON.parse(data);
+						if(response.response)
+						{   
+							$('#meetingTime').timepicker('setTime', response.time);
+							$('#addMeetingForm').trigger("reset");
+							$('#meetingDate').val(response.date);
+							$('#meetingTime').val(response.time);
+							$('#addMeetingModal').modal('show');
+						}
+						else
+						{      
+							toastr.error(response.message);
+						}
+					},
+					error:function(data)
+					{
+						toastr.error("Something went wrong!");
+					}
+				});
+				
+			}
 
     
 			var t;
@@ -392,11 +418,6 @@
 				});
 			}
 
-			function addMeeting() {
-				$('#addMeetingForm').trigger("reset");
-				$('#addMeetingModal').modal('show');
-			}
-
 			function editMeeting(id) {
 				var data = {};
 				data.type = 'edit-meeting';
@@ -418,7 +439,9 @@
 							var mtdate = date.toISOString().slice(0,10);
 							$("#editMeetingDate").val(mtdate);
 							$("#editMeetingTime").val(response.data.mt_time);
+							$('#editMeetingTime').timepicker('setTime', response.data.mt_time);
 							$("#editMeetingDuration").val(response.data.mt_duration);
+							$('#editMeetingDuration').timepicker('setTime', response.data.mt_duration);
 							$("#editMeetingParticipant").val(response.data.mt_participant);
 							$("#editMeetingUpdateId").val(response.data.mt_id);
 							$('#editMeetingModal').modal('show');
@@ -439,9 +462,6 @@
 				init:function() {
 					$("#editMeetingForm").validate( {
 						rules: {
-							editMeetingName: {
-								required: true
-							},
 							editMeetingId: {
 								required: true
 							},
@@ -455,14 +475,10 @@
 								required: true
 							},
 							editMeetingParticipant: {
-								required: true,
 								number: true
 							}
 						},
 						messages: {
-							editMeetingName: {
-								required: "Please enter meeting name"
-							},
 							editMeetingId: {
 								required: "Please enter meeting ID"
 							},
@@ -476,7 +492,6 @@
 								required: "Please enter meeting duration"
 							},
 							editMeetingParticipant: {
-								required: "Please enter total participant",
 								number: "Please enter valid number"
 							}
 						}
@@ -840,6 +855,70 @@
 						toastr.error("Something went wrong!");
 					}
 				});
+			}
+
+
+			var clockID;
+			var yourTimeZoneFrom = -4.00; //time zone value where you are at
+
+			var d = new Date();  
+			//get the timezone offset from local time in minutes
+			var tzDifference = yourTimeZoneFrom * 60 + d.getTimezoneOffset();
+			//convert the offset to milliseconds, add to targetTime, and make a new Date
+			var offset = tzDifference * 60 * 1000;
+
+			function UpdateClock() {
+			    var tDate = new Date(new Date().getTime()+offset);
+			    var in_hours = tDate.getHours()
+			    var in_minutes=tDate.getMinutes();
+			    var in_seconds= tDate.getSeconds();
+
+			    // Pad the minutes and seconds with leading zeros, if required
+			  	in_minutes = ( in_minutes < 10 ? "0" : "" ) + in_minutes;
+			  	in_seconds = ( in_seconds < 10 ? "0" : "" ) + in_seconds;
+
+			    // Choose either "AM" or "PM" as appropriate
+			  	var timeOfDay = ( in_hours < 12 ) ? "AM" : "PM";
+
+			  	// Convert the hours component to 12-hour format if needed
+			  	in_hours = ( in_hours > 12 ) ? in_hours - 12 : in_hours;
+
+			  	// Convert an hours component of "0" to "12"
+			  	in_hours = ( in_hours == 0 ) ? 12 : in_hours;
+
+			    document.getElementById('liveClock').innerHTML = "" 
+			                   + in_hours + ":" 
+			                   + in_minutes + ":" 
+			                   + in_seconds + " "
+			                   + timeOfDay;
+
+			    document.getElementById('addMeetingClock').innerHTML = "" 
+			                   + in_hours + ":" 
+			                   + in_minutes + ":" 
+			                   + in_seconds + " "
+			                   + timeOfDay;
+
+			    document.getElementById('updateMeetingClock').innerHTML = "" 
+			                   + in_hours + ":" 
+			                   + in_minutes + ":" 
+			                   + in_seconds + " "
+			                   + timeOfDay;
+
+			    document.getElementById('monitorMeetingClock').innerHTML = "" 
+			                   + in_hours + ":" 
+			                   + in_minutes + ":" 
+			                   + in_seconds + " "
+			                   + timeOfDay;
+			}
+			function LiveStartClock() {
+			   clockID = setInterval(UpdateClock, 500);
+			}
+
+			function KillClock() {
+			  clearTimeout(clockID);
+			}
+			window.onload=function() {
+			  LiveStartClock();
 			}
 		</script>
 

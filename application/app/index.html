@@ -306,9 +306,16 @@
                     $("#messageModal").modal('hide');
                   }, response.afterstart);
 
-                  setTimeout(function() {
+                  if(response.instant)
+                  {
+                    setTimeout(function() {
+                      startClock(response.mseconds)	
+                    }, response.afterstart);
+                  }
+                  else
+                  {
                     startClock(response.mseconds)	
-                  }, response.afterstart);
+                  }
                 }
                 else 
                 {

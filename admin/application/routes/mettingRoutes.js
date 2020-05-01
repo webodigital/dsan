@@ -33,6 +33,16 @@ router.post('/add', function(req,res) {
   }
 })
 
+router.post('/add-modal', function(req,res) {
+  if(req.session.is_auth)
+  {
+    metting_ctrl.addModal(req,res)
+  }
+  else{
+    res.redirect('/')
+  }
+})
+
 router.post('/change-status', function(req,res) {
   if(req.session.is_auth)
   {

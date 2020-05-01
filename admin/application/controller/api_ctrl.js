@@ -44,7 +44,7 @@ api_ctrl.meetingDetails = function(req, res)
                 }
                 else
                 {
-                    var currentDate = moment().tz("asia/kolkata").format('YYYY-MM-DD');
+                    var currentDate = moment().tz("America/New_York").format('YYYY-MM-DD');
                     if(currentDate  > result[0].mt_date)
                     {
                         var message = {
@@ -60,7 +60,7 @@ api_ctrl.meetingDetails = function(req, res)
                         if(result[0].mt_date == currentDate)
                         {
                             var myTime = result[0].mt_date + ' ' + result[0].mt_time;
-                            var time = moment().tz("asia/kolkata").format('YYYY-MM-DD h:mm:ss a');
+                            var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
 
                             if(time > myTime)
                             {
@@ -68,7 +68,7 @@ api_ctrl.meetingDetails = function(req, res)
                                 db.query({ sql, values: [result[0].mt_id] }, function (error1, result1) {
                                     if(empty(result1))
                                     {
-                                        var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                        var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                                         var ed = expireDuration.split(':');
                                         var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
 
@@ -87,7 +87,7 @@ api_ctrl.meetingDetails = function(req, res)
                                                 instant    : false,
                                                 message    : 'Please wait, the meeting host will let you in soon.',
                                                 data       : result[0],
-                                                mseconds   : seconds - expireSeconds,
+                                                mseconds   : seconds - expireSeconds -1,
                                                 afterstart : ( 0 )
                                             }
                                             res.write(JSON.stringify(message));
@@ -118,7 +118,7 @@ api_ctrl.meetingDetails = function(req, res)
                                         {
                                             if(result1[0].tm_status == 'On')
                                             {
-                                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result1[0].tm_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result1[0].tm_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                                                 var ed = expireDuration.split(':');
                                                 var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
 
@@ -162,9 +162,9 @@ api_ctrl.meetingDetails = function(req, res)
                             }
                             else
                             {
-                                var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD h:mm:ss a").diff(moment(time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD hh:mm:ss A").diff(moment(time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                                 var es = startSeconds.split(':');
-                                var afterSecondsTimer  = (+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]);
+                                var afterSecondsTimer  = ((+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]));
                                 var ast = (afterSecondsTimer/60) | 0;
                                 if(ast <= 65)
                                 {
@@ -185,7 +185,7 @@ api_ctrl.meetingDetails = function(req, res)
                                 }
                                 else
                                 {
-                                    var time = moment().tz("asia/kolkata").format('YYYY-MM-DD, h:mm:ss a');
+                                    var time = moment().tz("America/New_York").format('YYYY-MM-DD, hh:mm:ss A');
                                     var message = {
                                         response : false,
                                         message  : 'Please wait, your meeting is ' + startSeconds + ' hour ahead.'

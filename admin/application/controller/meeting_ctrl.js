@@ -72,12 +72,24 @@ meeting_ctrl.add = function(req, res)
     db.query({ sql, values: [req.body.meetingId] }, function (se, search) {
 
         if(empty(search)) {
+
+            var time = req.body.meetingTime.split(':');
+            var hours = time[0];
+            if(time[0] < 10)
+            {
+                if(time[0].length == 1)
+                {
+                    hours = "0"+time[0];
+                }
+            }
+            var meetingTime = hours+':'+time[1]+':'+time[2];
+            
             var sql = "INSERT INTO zc_meeting SET ?";
             const meetingData = {
                 mt_name        : req.body.meetingName, 
                 mt_mid         : req.body.meetingId,
                 mt_date        : req.body.meetingDate,
-                mt_time        : req.body.meetingTime,
+                mt_time        : meetingTime,
                 mt_duration    : req.body.meetingDuration,
                 mt_participant : req.body.meetingParticipant ,
                 mt_password    : md5(req.body.meetingPassword)
@@ -125,15 +137,15 @@ meeting_ctrl.changeStatus = function(req, res)
             timer = 'Close';
         }
 
-        var currentDate = moment().tz("asia/kolkata").format('YYYY-MM-DD');
+        var currentDate = moment().tz("America/New_York").format('YYYY-MM-DD');
         if(result[0].mt_date == currentDate)
         {
             var myTime = result[0].mt_date + ' ' + result[0].mt_time;
-            var time = moment().tz("asia/kolkata").format('YYYY-MM-DD h:mm:ss a');
+            var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
 
             if(time > myTime)
             {
-                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                 var ed = expireDuration.split(':');
                 var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
 
@@ -255,11 +267,12 @@ meeting_ctrl.details = function(req, res)
         }
         else
         {
-            var currentDate = moment().tz("asia/kolkata").format('YYYY-MM-DD');
+            var currentDate = moment().tz("America/New_York").format('YYYY-MM-DD');
             if(result[0].mt_date == currentDate)
             {
                 var myTime = result[0].mt_date + ' ' + result[0].mt_time;
-                var time = moment().tz("asia/kolkata").format('YYYY-MM-DD h:mm:ss a');
+                var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
+                
 
                 if(time > myTime)
                 {
@@ -297,8 +310,19 @@ meeting_ctrl.details = function(req, res)
 
 meeting_ctrl.update = function(req, res)
 {
+    var time = req.body.editMeetingTime.split(':');
+    var hours = time[0];
+    if(time[0] < 10)
+    {
+        if(time[0].length == 1)
+        {
+            hours = "0"+time[0];
+        }
+    }
+    var editMeetingTime = hours+':'+time[1]+':'+time[2];
+
     var sqlUpdate = "UPDATE zc_meeting set mt_name = ?, mt_date = ?, mt_time = ?, mt_duration = ?, mt_participant = ?  WHERE mt_id = ?"; 
-    db.query(sqlUpdate, [req.body.editMeetingName, req.body.editMeetingDate, req.body.editMeetingTime, req.body.editMeetingDuration, req.body.editMeetingParticipant, req.body.editMeetingUpdateId], function(err, result) {
+    db.query(sqlUpdate, [req.body.editMeetingName, req.body.editMeetingDate, editMeetingTime, req.body.editMeetingDuration, req.body.editMeetingParticipant, req.body.editMeetingUpdateId], function(err, result) {
         if(result.affectedRows)
         {
             var message = {
@@ -346,7 +370,7 @@ meeting_ctrl.monitor = function(req, res)
                 }
                 else
                 {
-                    var currentDate = moment().tz("asia/kolkata").format('YYYY-MM-DD');
+                    var currentDate = moment().tz("America/New_York").format('YYYY-MM-DD');
                     if(currentDate  > result[0].mt_date)
                     {
                         var message = {
@@ -362,7 +386,7 @@ meeting_ctrl.monitor = function(req, res)
                         if(result[0].mt_date == currentDate)
                         {
                             var myTime = result[0].mt_date + ' ' + result[0].mt_time;
-                            var time = moment().tz("asia/kolkata").format('YYYY-MM-DD h:mm:ss a');
+                            var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
 
                             if(time > myTime)
                             {
@@ -370,7 +394,7 @@ meeting_ctrl.monitor = function(req, res)
                                 db.query({ sql, values: [req.body.id] }, function (error1, result1) {
                                     if(empty(result1))
                                     {
-                                        var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                        var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                                         var ed = expireDuration.split(':');
                                         var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
 
@@ -389,7 +413,7 @@ meeting_ctrl.monitor = function(req, res)
                                                 instant    : false,
                                                 message    : 'Please wait, the meeting host will let you in soon.',
                                                 data       : result[0],
-                                                mseconds   : seconds - expireSeconds,
+                                                mseconds   : seconds - expireSeconds -1,
                                                 afterstart : ( 0 ),
                                                 action     : 'start'
                                             }
@@ -421,7 +445,7 @@ meeting_ctrl.monitor = function(req, res)
                                         {
                                             if(result1[0].tm_status == 'On')
                                             {
-                                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result1[0].tm_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result1[0].tm_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                                                 var ed = expireDuration.split(':');
                                                 var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
 
@@ -453,7 +477,7 @@ meeting_ctrl.monitor = function(req, res)
                                             }
                                             else
                                             {
-                                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD h:mm:ss a").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                                var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                                                 var ed = expireDuration.split(':');
                                                 var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
 
@@ -492,9 +516,9 @@ meeting_ctrl.monitor = function(req, res)
                             }
                             else
                             {
-                                var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD h:mm:ss a").diff(moment(time,"YYYY-MM-DD h:mm:ss a"))).format("HH:mm:ss");
+                                var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD hh:mm:ss A").diff(moment(time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                                 var es = startSeconds.split(':');
-                                var afterSecondsTimer  = (+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]);
+                                var afterSecondsTimer  = ((+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]));
                                 var ast = (afterSecondsTimer/60) | 0;
                                 if(ast <= 5)
                                 {
@@ -516,7 +540,7 @@ meeting_ctrl.monitor = function(req, res)
                                 }
                                 else
                                 {
-                                    var time = moment().tz("asia/kolkata").format('YYYY-MM-DD, h:mm:ss a');
+                                    var time = moment().tz("America/New_York").format('YYYY-MM-DD, hh:mm:ss A');
                                     var message = {
                                         response : false,
                                         message  : 'Please wait, your meeting is ' + result[0].mt_time + ' ahead.'
@@ -615,7 +639,7 @@ meeting_ctrl.changeCstatus = function(req, res)
                         var insertSQL = "INSERT INTO zc_timing SET ?";
                         const timingData = {
                             mt_id            : req.body.id, 
-                            tm_time          : moment().tz("asia/kolkata").format('h:mm:ss a'),
+                            tm_time          : moment().tz("America/New_York").format('hh:mm:ss A'),
                             tm_status        : req.body.status,
                             tm_remaining     : req.body.time,
                             tm_eplased_sec   : eplasedTime,
@@ -665,6 +689,32 @@ meeting_ctrl.changeCstatus = function(req, res)
         }
     });
     
+}
+
+meeting_ctrl.addModal = function(req, res)
+{
+   var time = moment().tz("America/New_York").format('hh:mm:ss A');
+   var date = moment().tz("America/New_York").format('YYYY-MM-DD');
+   if(time != "")
+   {
+        var message = {
+            response : true,
+            message  : 'Success',
+            time     : time,
+            date     : date
+        }
+        res.write(JSON.stringify(message));
+        res.end();
+   }
+   else
+   {
+        var message = {
+            response : false,
+            message  : 'Something went wrong!'
+        }
+        res.write(JSON.stringify(message));
+        res.end();
+   }
 }
 
 module.exports = meeting_ctrl;
