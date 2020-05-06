@@ -95,6 +95,26 @@
   </div>
 </div>
 
+<div id="messageFutureModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body">
+
+        <div class="alert alert-success alert-dismissible fade hide" role="alert" id="msgFutureSuccess">
+          
+        </div>
+        <div class="alert alert-danger alert-dismissible fade hide" role="alert" id="msgFutureDanger">
+        
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
@@ -110,8 +130,11 @@
     
     $('#myMeetingIdModal').modal({backdrop: 'static', keyboard: false});
 
+    var futureTimer;
+
     var meetingId = 0;
-    const socket = io.connect('http://35.245.107.78');
+    console.log(meetingId);
+    const socket = io.connect('http://127.0.0.1:3000');
     const timer = $('#timer')
     const s = $(timer).find('.seconds')
     const m = $(timer).find('.minutes')
@@ -277,9 +300,10 @@
         submitError: function($form, event, errors) {},
         submitSuccess: function($form, event) {
           meetingId = $("#meetingId").val();
+
           meetingPassword = $("#meetingPassword").val();
           $.ajax({
-              url: "http://35.245.107.78/api/meeting-details",
+              url: "http://127.0.0.1:3000/api/meeting-details",
               data: {meetingId: meetingId, meetingPassword: meetingPassword},
               type: 'POST',
               success: function(response) {
@@ -308,7 +332,7 @@
 
                   if(response.instant)
                   {
-                    setTimeout(function() {
+                    futureTimer = setTimeout(function() {
                       startClock(response.mseconds)	
                     }, response.afterstart);
                   }
@@ -339,11 +363,11 @@
 
     socket.on('client-meeting-status', (data) => {
       response = JSON.parse(data);
-      console.log(response);
-      if(response.action == 'Deactive')
+      if(meetingId == response.meetingId)
       {
-        if(meetingId == response.meetingId)
+        if(response.action == 'Deactive')
         {
+          meetingId = 0;
           clear(interval)
           $("#msgSuccess").removeClass('show').addClass('hide');
           $("#msgDanger").html(response.amessage);
@@ -375,6 +399,7 @@
 
         if(response.action == 'Suspend')
         {
+          meetingId = 0;
           clear(interval)
           $("#msgSuccess").removeClass('show').addClass('hide');
           $("#msgDanger").html(response.amessage);
@@ -388,6 +413,63 @@
         }
       }
 
+    });
+
+    socket.on('client-meeting-future-update', (data) => {
+      response = JSON.parse(data);
+      if(meetingId == response.meetingId)
+      {
+        if(response.date)
+        {
+          if(response.time)
+          {
+            clearInterval(futureTimer);
+            clear(interval);
+            $("#messageModal").modal('hide');
+            $("#msgFutureDanger").removeClass('show').addClass('hide');
+            $("#msgFutureSuccess").html(response.imessage);
+            $("#msgFutureSuccess").removeClass('hide').addClass('show');
+            $("#messageFutureModal").modal('show');
+            setTimeout(function() {
+              $("#messageFutureModal").modal('hide');
+            }, response.after);
+
+            futureTimer = setTimeout(function() {
+              startClock(response.seconds) 
+            }, response.after);
+          }
+          else
+          {
+            meetingId = 0;
+            clearInterval(futureTimer);
+            clear(interval)
+            $("#msgSuccess").removeClass('show').addClass('hide');
+            $("#msgDanger").html(response.tmessage);
+            $("#msgDanger").removeClass('hide').addClass('show');
+            $("#messageModal").modal('show');
+            setTimeout(function() {
+              $("#msgDanger").removeClass('show').addClass('hide');
+              $("#messageModal").modal('hide');
+              location.reload();
+            }, 10000);
+          }
+        }
+        else
+        {
+          meetingId = 0;
+          clearInterval(futureTimer);
+          clear(interval)
+          $("#msgSuccess").removeClass('show').addClass('hide');
+          $("#msgDanger").html(response.rmessage);
+          $("#msgDanger").removeClass('hide').addClass('show');
+          $("#messageModal").modal('show');
+          setTimeout(function() {
+            $("#msgDanger").removeClass('show').addClass('hide');
+            $("#messageModal").modal('hide');
+            location.reload();
+          }, 10000);
+        }
+      }
     });
 
 

@@ -208,6 +208,20 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12 text-center">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="monitorMeetingDuration" name="monitorMeetingDuration" value="00:00:00" readonly placeholder="Please plus/minus duration">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-primary" id="monitorMeetingPlusBtn" onclick="meetingScheduler('Plus')">+</button>
+                                    <button type="button" class="btn btn-primary" id="monitorMeetingMinusBtn" onclick="meetingScheduler('Minus')">-</button>
+                                </div>
+                            </div>
+                        </div>
+                
                         <div class="digital_watch_container center" >
                             <div id="timer" class="timer well">
                                 <div class="clock-wrapper">

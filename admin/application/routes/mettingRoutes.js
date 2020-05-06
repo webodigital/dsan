@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var metting_ctrl = require('../controller/meeting_ctrl');
+var meeting_ctrl = require('../controller/meeting_ctrl');
 
 router.get('/', function(req, res, next) {
     if(req.session.is_auth)
@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
 router.post('/list', function(req,res) {
   if(req.session.is_auth)
   {
-    metting_ctrl.list(req,res)
+    meeting_ctrl.list(req,res)
   }
  else{
    res.redirect('/')
@@ -26,7 +26,7 @@ router.post('/list', function(req,res) {
 router.post('/add', function(req,res) {
   if(req.session.is_auth)
   {
-    metting_ctrl.add(req,res)
+    meeting_ctrl.add(req,res)
   }
   else{
     res.redirect('/')
@@ -36,7 +36,7 @@ router.post('/add', function(req,res) {
 router.post('/add-modal', function(req,res) {
   if(req.session.is_auth)
   {
-    metting_ctrl.addModal(req,res)
+    meeting_ctrl.addModal(req,res)
   }
   else{
     res.redirect('/')
@@ -46,7 +46,7 @@ router.post('/add-modal', function(req,res) {
 router.post('/change-status', function(req,res) {
   if(req.session.is_auth)
   {
-    metting_ctrl.changeStatus(req,res)
+    meeting_ctrl.changeStatus(req,res)
   }
   else{
     res.redirect('/')
@@ -56,7 +56,7 @@ router.post('/change-status', function(req,res) {
 router.post('/details', function(req,res) {
   if(req.session.is_auth)
   {
-    metting_ctrl.details(req,res)
+    meeting_ctrl.details(req,res)
   }
   else{
     res.redirect('/')
@@ -66,7 +66,7 @@ router.post('/details', function(req,res) {
 router.post('/update', function(req,res) {
   if(req.session.is_auth)
   {
-    metting_ctrl.update(req,res)
+    meeting_ctrl.update(req,res)
   }
   else{
     res.redirect('/')
@@ -74,23 +74,27 @@ router.post('/update', function(req,res) {
 })
 
 router.post('/monitor', function(req,res) {
-  // if(req.session.is_auth)
-  // {
-    metting_ctrl.monitor(req,res)
-  // }
-  // else{
-  //   res.redirect('/')
-  // }
+  if(req.session.is_auth)
+  {
+    meeting_ctrl.monitor(req,res)
+  }
+  else{
+    res.redirect('/')
+  }
 })
 
 router.post('/change-cstatus', function(req,res) {
-  // if(req.session.is_auth)
-  // {
-    metting_ctrl.changeCstatus(req,res)
-  // }
-  // else{
-  //   res.redirect('/')
-  // }
+  if(req.session.is_auth)
+  {
+    meeting_ctrl.changeCstatus(req,res)
+  }
+  else{
+    res.redirect('/')
+  }
+})
+
+router.post('/update-monitor-time', function(req,res) {
+  meeting_ctrl.updateMonitorTime(req,res)
 })
 
 

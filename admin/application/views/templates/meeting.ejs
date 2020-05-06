@@ -76,7 +76,7 @@
 		
 		<script type="text/javascript">
 
-			const socket = io.connect('http://35.245.107.78');
+			const socket = io.connect('http://127.0.0.1:3000');
 
 			var addMeetingFormControl = {
 				init:function() {
@@ -367,7 +367,7 @@
 
 			var BootstrapTimepicker= {
 				init:function() {
-					$("#meetingDuration, #editMeetingDuration").timepicker( {
+					$("#meetingDuration, #editMeetingDuration, #monitorMeetingDuration").timepicker( {
 						minuteStep: 1, showSeconds: !0, showMeridian: !1, snapToStep: !0, autoclose: !0
 					}
 					),
@@ -520,7 +520,9 @@
 								{
 									response = JSON.parse(data);
 									if(response.response)
-									{   
+									{	
+										console.log(data);
+										socket.emit('meeting-future-update', data);   
 										$(".meeting_list").mDatatable("reload");
 										toastr.success(response.message);
 										setTimeout(function() {
@@ -919,6 +921,60 @@
 			}
 			window.onload=function() {
 			  LiveStartClock();
+			}
+
+			function meetingScheduler(type)
+			{
+				var id = $("#monitorMeetingId").val();
+				var time = $("#monitorMeetingDuration").val();
+				var a = time.split(':');
+                var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
+				if(seconds > 0 && id > 0)
+				{
+					var data     = {};
+					data.type    = type;
+					data.id      = id;
+					data.seconds = seconds;	
+					data.time    = time;
+				
+					$.ajax({
+						type: 'POST',
+						data: JSON.stringify(data),
+						contentType: 'application/json',
+						url: '<%= base_url %>/meeting/update-monitor-time',
+						success: function(data) 
+						{
+							console.log(data);
+							response = JSON.parse(data);
+							if(response.response)
+							{ 
+								if(response.instant)
+								{
+									clear(interval)
+									startClock(response.second)
+								}  
+								else
+								{
+									startClock(response.second)
+									clear(interval)
+								}
+								toastr.success(response.message);
+							}
+							else
+							{      
+								toastr.error(response.message);
+							}
+						},
+						error:function(data)
+						{
+							toastr.error("Something went wrong!");
+						}
+					});
+				}
+				else
+				{
+					toastr.error("Something went wrong!");
+				}
 			}
 		</script>
 

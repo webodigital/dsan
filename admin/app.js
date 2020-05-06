@@ -66,6 +66,10 @@ io.on('connection', (socket) => {
     io.emit('client-meeting-monitor', data);
   });
 
+  socket.on('meeting-future-update', (data) => {
+    io.emit('client-meeting-future-update', data);
+  });
+
 });
 
 
