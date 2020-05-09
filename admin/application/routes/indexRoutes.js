@@ -5,7 +5,7 @@ var router = express.Router();
 router.get('/', function(req, res, next) {
   if(req.session.is_auth)
   {
-    res.redirect('/meeting')
+    res.redirect('/meeting/stopwatch')
   }
   else
   {

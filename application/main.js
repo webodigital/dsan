@@ -11,7 +11,7 @@ app.on('ready', function(){
     // Create new window
     mainWindow = new BrowserWindow({
         frame: true,
-        resizable: true,
+        resizable: false,
         width: 450,
         height: 290,
         icon: __dirname + '/app/img/logo.png'
@@ -22,17 +22,17 @@ app.on('ready', function(){
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
     // Build menu from template
-    // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-    // // Insert menu
-    // Menu.setApplicationMenu(mainMenu);
+    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    // Insert menu
+    Menu.setApplicationMenu(mainMenu);
 
 });
 
 // Create menu template
-// const mainMenuTemplate = [
-//     {
-//         label: ''
-//     }
-// ];
+const mainMenuTemplate = [
+    {
+        label: ''
+    }
+];
 
   

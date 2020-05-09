@@ -30,14 +30,15 @@ meeting_ctrl.list = function(req,res)
     {
         start = ((parseInt(page)-1)*parseInt(perpage));
     }
-        
+    
+    let sWhere = ' WHERE mt_type = "Schedule" ';
     let sLimit = ' LIMIT ' +start+ ', ' +perpage;
     let sOrder = ' ORDER BY mt_date DESC, mt_time DESC';
-    let sql = 'SELECT * FROM ' + sTable + ' ' + sOrder + sLimit;
+    let sql = 'SELECT * FROM ' + sTable + ' ' + sWhere + ' ' + sOrder + sLimit;
 
     db.query(sql, function(err, result){
 
-        let sql1 = 'SELECT * FROM ' + sTable
+        let sql1 = 'SELECT * FROM ' + sTable + ' ' + sWhere;
         db.query(sql1, function(err1, result1){
 
             let total = 0;
@@ -307,7 +308,7 @@ meeting_ctrl.details = function(req, res)
                     var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD hh:mm:ss A").diff(moment(time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                     var es = startSeconds.split(':');
                     var afterSecondsTimer  = ((+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]));
-                    if(afterSecondsTimer >= 10)
+                    if(afterSecondsTimer >= 60)
                     {
                         var message = {
                             response : true,
@@ -398,7 +399,7 @@ meeting_ctrl.update = function(req, res)
                     var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD hh:mm:ss A").diff(moment(time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
                     var es = startSeconds.split(':');
                     var afterSecondsTimer  = ((+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]));
-                    if(afterSecondsTimer >= 10)
+                    if(afterSecondsTimer >= 60)
                     {
                         updateStatus = true;
                     }
@@ -476,12 +477,12 @@ meeting_ctrl.update = function(req, res)
                         var message = {
                             response  : true,
                             message   : 'Successfully updated meeting',
-                            seconds   : changeSeconds-1,
+                            seconds   : changeSeconds,
                             date      : cdate,
                             rmessage  : 'Your Meeting has been rescheduled at '+ req.body.editMeetingDate +' on date: ' + editMeetingTime,
                             time      : ctime,
                             tmessage  : ctimemessage,
-                            after     : (afterSecondsTimer * 1000),
+                            after     : ((afterSecondsTimer-1) * 1000),
                             imessage  : 'Please wait, the meeting host will let you in soon.',
                             meetingId : req.body.editMeetingUpdateId
 
@@ -680,7 +681,7 @@ meeting_ctrl.monitor = function(req, res)
                                 var es = startSeconds.split(':');
                                 var afterSecondsTimer  = ((+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]));
                                 var ast = (afterSecondsTimer/60) | 0;
-                                if(ast <= 5)
+                                if(ast <= 50)
                                 {
                                     var hms = result[0].mt_duration;
                                     var a = hms.split(':');
@@ -691,8 +692,8 @@ meeting_ctrl.monitor = function(req, res)
                                         instant    : true,
                                         message    : 'Please wait, the meeting host will let you in soon.',
                                         data       : result[0],
-                                        mseconds   : seconds-1,
-                                        afterstart : ( afterSecondsTimer * 1000),
+                                        mseconds   : seconds,
+                                        afterstart : ( (afterSecondsTimer-1) * 1000),
                                         action     : 'start'
                                     }
                                     res.write(JSON.stringify(message));
@@ -776,7 +777,22 @@ meeting_ctrl.changeCstatus = function(req, res)
                 }
                 else
                 {
-                    upStatus = true;
+                    var currentDate = moment().tz("America/New_York").format('YYYY-MM-DD');
+                    
+                    if(result[0].mt_date == currentDate)
+                    {
+                        var myTime = result[0].mt_date + ' ' + result[0].mt_time;
+                        var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
+
+                        if(time > myTime)
+                        {
+                            upStatus = true;
+                        }
+                        else
+                        {
+                            upStatus = false;
+                        }
+                    }
                 }
             }
 
@@ -935,7 +951,8 @@ meeting_ctrl.updateMonitorTime = function(req, res) {
                                             message   : 'Meeting extended',
                                             second    : (seconds+req.body.seconds) - expireSeconds - 1,
                                             instant   : true,
-                                            meetingId : req.body.id
+                                            meetingId : req.body.id,
+                                            type      : 'running'
                                         }
                                         res.write(JSON.stringify(message));
                                         res.end();
@@ -1006,7 +1023,8 @@ meeting_ctrl.updateMonitorTime = function(req, res) {
                                                 message   : 'Meeting extended',
                                                 second    : (parseInt(seconds)+parseInt(req.body.seconds)) - expireSeconds - 1,
                                                 instant   : true,
-                                                meetingId : req.body.id
+                                                meetingId : req.body.id,
+                                                type      : 'running'
                                             }
                                             res.write(JSON.stringify(message));
                                             res.end();
@@ -1069,7 +1087,8 @@ meeting_ctrl.updateMonitorTime = function(req, res) {
                                                 message   : 'Meeting extended',
                                                 second    : parseInt(seconds)+parseInt(req.body.seconds),
                                                 instant   : false,
-                                                meetingId : req.body.id
+                                                meetingId : req.body.id,
+                                                type      : 'running'
                                             }
                                             res.write(JSON.stringify(message));
                                             res.end();
@@ -1105,12 +1124,406 @@ meeting_ctrl.updateMonitorTime = function(req, res) {
                     });
                 }
                 else
-                {
-                    console.log('Starting');
+                { 
+                    var hms = result[0].mt_duration;
+                    var a = hms.split(':');
+                    var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
+                    var totalSeconds = seconds+req.body.seconds;
+
+                    phours = Math.floor(totalSeconds / 3600);
+                    totalSeconds %= 3600;
+                    pminutes = Math.floor(totalSeconds / 60);
+                    pseconds = totalSeconds % 60;
+                    ptime = phours+':'+pminutes+':'+pseconds;
+
+                    var myTime = result[0].mt_date + ' ' + result[0].mt_time;
+                    var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
+                    var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD hh:mm:ss A").diff(moment(time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
+                    var es = startSeconds.split(':');
+                    var afterSecondsTimer  = ((+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]));
+                    
+                    var sqlUpdate = "UPDATE zc_meeting set mt_duration = ? WHERE mt_id = ?"; 
+                    db.query(sqlUpdate, [ptime, req.body.id], function(err1, result1) {
+                        if(result1.affectedRows)
+                        {
+                            var message = {
+                                response  : true,
+                                message   : 'Meeting Extended',
+                                seconds   : seconds+req.body.seconds,
+                                type      : 'pause',
+                                after     : (afterSecondsTimer * 1000),
+                            }
+                            res.write(JSON.stringify(message));
+                            res.end();
+                        }
+                        else
+                        {
+                            var message = {
+                                response : false,
+                                message  : 'Something went wrong!'
+                            }
+                            res.write(JSON.stringify(message));
+                            res.end();
+                        }
+                    });
                 }
             }
             else {
+                var myTime = result[0].mt_date + ' ' + result[0].mt_time;
+                var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
+                if(time > myTime)
+                {
+                    const sql = "SELECT * FROM `zc_timing` WHERE `mt_id` = ? ORDER BY tm_id DESC limit 1";
+                    db.query({ sql, values: [req.body.id] }, function (error1, result1) {
+                        if(empty(result1))
+                        {
+                            var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result[0].mt_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
+                            var ed = expireDuration.split(':');
+                            var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
+                            var hms = result[0].mt_duration;
+                            var a = hms.split(':');
+                            var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
+                            var avSeconds = seconds - expireSeconds;
+                            if(avSeconds > req.body.seconds)
+                            {
+                                if(expireSeconds <= seconds)
+                                {
+                                    var monitorSQL = "INSERT INTO zc_monitor SET ?";
+                                    const monitorData = {
+                                        mt_id            : req.body.id, 
+                                        m_time           : req.body.time,
+                                        m_seconds        : req.body.seconds,
+                                        m_type           : req.body.type,
+                                        m_eplasedseconds : expireSeconds
+                                    };
+                                    
+                                    db.query(monitorSQL, monitorData, function(err1, result1){
+                                        
+                                        var controlSQL = "INSERT INTO zc_timing SET ?";
+                                        const controlData = {
+                                            mt_id            : req.body.id, 
+                                            tm_time          : moment().tz("America/New_York").format('hh:mm:ss A'),
+                                            tm_status        : 'On',
+                                            tm_eplased_sec   : expireSeconds,
+                                            tm_remaining_sec : (seconds-req.body.seconds) - expireSeconds - 1,
+                                            tm_type          : 'Monitor'
+                                        };
+                                        
+                                        db.query(controlSQL, controlData, function(err2, result2){
+                                            var message = {
+                                                response  : true,
+                                                message   : 'Meeting time reduce',
+                                                second    : (seconds-req.body.seconds) - expireSeconds - 1,
+                                                instant   : true,
+                                                meetingId : req.body.id,
+                                                type      : 'running'
+                                            }
+                                            res.write(JSON.stringify(message));
+                                            res.end();
+                                        }).on('error', function(error2) {
+                                            var message = {
+                                                response : false,
+                                                message  : 'Something went wrong!'
+                                            }
+                                            res.write(JSON.stringify(message));
+                                            res.end();
+                                        });
 
+                                    }).on('error', function(error1) {
+                                        var message = {
+                                            response : false,
+                                            message  : 'Something went wrong!'
+                                        }
+                                        res.write(JSON.stringify(message));
+                                        res.end();
+                                    });
+                                }
+                                else
+                                {
+                                    var message = {
+                                        response : false,
+                                        message  : 'Meeting is over now.'
+                                    }
+                                    res.write(JSON.stringify(message));
+                                    res.end();
+                                }
+                            }
+                            else
+                            {
+                                var sqlUpdate = "UPDATE zc_meeting set mt_cstatus = ? WHERE mt_id = ?"; 
+                                db.query(sqlUpdate, ['Suspend', req.body.id], function(err1, result1) {
+                                    if(result1.affectedRows)
+                                    {
+                                        var message = {
+                                            response  : true,
+                                            message   : 'Meeting time reduce',
+                                            type      : 'suspended',
+                                            action    : 'Suspend',
+                                            meetingId : req.body.id,
+                                            amessage  : 'Sorry, Your meeting has been suspended by Host.'
+                                        }
+                                        res.write(JSON.stringify(message));
+                                        res.end();
+                                    }
+                                    else
+                                    {
+                                        var message = {
+                                            response : false,
+                                            message  : 'Something went wrong!'
+                                        }
+                                        res.write(JSON.stringify(message));
+                                        res.end();
+                                    }
+                                });
+                            }
+                        }
+                        else
+                        {
+                            var expireDuration = moment.utc(moment(time,"YYYY-MM-DD hh:mm:ss A").diff(moment(result[0].mt_date + ' ' + result1[0].tm_time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
+                            var ed = expireDuration.split(':');
+                            var expireSeconds  = (+ed[0]) * 60 * 60 + (+ed[1]) * 60 + (+ed[2]);
+                            var seconds = result1[0].tm_remaining_sec; 
+                            
+                            var avSeconds = seconds - expireSeconds;
+                            if(avSeconds > req.body.seconds)
+                            {
+                                if(result1[0].tm_status == 'On')
+                                {
+                                    if(expireSeconds <= seconds)
+                                    {
+                                        var monitorSQL = "INSERT INTO zc_monitor SET ?";
+                                        const monitorData = {
+                                            mt_id            : req.body.id, 
+                                            m_time           : req.body.time,
+                                            m_seconds        : req.body.seconds,
+                                            m_type           : req.body.type,
+                                            m_eplasedseconds : expireSeconds
+                                        };
+                                        
+                                        db.query(monitorSQL, monitorData, function(err1, result1){
+                                            
+                                            var controlSQL = "INSERT INTO zc_timing SET ?";
+                                            const controlData = {
+                                                mt_id            : req.body.id, 
+                                                tm_time          : moment().tz("America/New_York").format('hh:mm:ss A'),
+                                                tm_status        : 'On',
+                                                tm_eplased_sec   : expireSeconds,
+                                                tm_remaining_sec : (parseInt(seconds)-parseInt(req.body.seconds)) - expireSeconds - 1,
+                                                tm_type          : 'Monitor'
+                                            };
+                                            
+                                            db.query(controlSQL, controlData, function(err2, result2){
+                                                var message = {
+                                                    response  : true,
+                                                    message   : 'Meeting time reduce',
+                                                    second    : (parseInt(seconds)-parseInt(req.body.seconds)) - expireSeconds - 1,
+                                                    instant   : true,
+                                                    meetingId : req.body.id,
+                                                    type      : 'running'
+                                                }
+                                                res.write(JSON.stringify(message));
+                                                res.end();
+                                            }).on('error', function(error2) {
+                                                var message = {
+                                                    response : false,
+                                                    message  : 'Something went wrong!'
+                                                }
+                                                res.write(JSON.stringify(message));
+                                                res.end();
+                                            });
+
+                                        }).on('error', function(error1) {
+                                            var message = {
+                                                response : false,
+                                                message  : 'Something went wrong!'
+                                            }
+                                            res.write(JSON.stringify(message));
+                                            res.end();
+                                        });
+                                    }
+                                    else
+                                    {
+                                        var message = {
+                                            response : false,
+                                            message  : 'Meeting is over now.'
+                                        }
+                                        res.write(JSON.stringify(message));
+                                        res.end();
+                                    }
+                                } 
+                                else
+                                {
+                                    if(expireSeconds <= seconds)
+                                    {
+                                        var monitorSQL = "INSERT INTO zc_monitor SET ?";
+                                        const monitorData = {
+                                            mt_id            : req.body.id, 
+                                            m_time           : req.body.time,
+                                            m_seconds        : req.body.seconds,
+                                            m_type           : req.body.type,
+                                            m_eplasedseconds : 0
+                                        };
+                                        
+                                        db.query(monitorSQL, monitorData, function(err1, result1){
+                                            
+                                            var controlSQL = "INSERT INTO zc_timing SET ?";
+                                            const controlData = {
+                                                mt_id            : req.body.id, 
+                                                tm_time          : moment().tz("America/New_York").format('hh:mm:ss A'),
+                                                tm_status        : 'Pause',
+                                                tm_eplased_sec   : 0,
+                                                tm_remaining_sec : parseInt(seconds)-parseInt(req.body.seconds),
+                                                tm_type          : 'Monitor'
+                                            };
+                                            
+                                            db.query(controlSQL, controlData, function(err2, result2){
+                                                var message = {
+                                                    response  : true,
+                                                    message   : 'Meeting time reduce',
+                                                    second    : parseInt(seconds)-parseInt(req.body.seconds),
+                                                    instant   : false,
+                                                    meetingId : req.body.id,
+                                                    type      : 'running'
+                                                }
+                                                res.write(JSON.stringify(message));
+                                                res.end();
+                                            }).on('error', function(error2) {
+                                                var message = {
+                                                    response : false,
+                                                    message  : 'Something went wrong!'
+                                                }
+                                                res.write(JSON.stringify(message));
+                                                res.end();
+                                            });
+
+                                        }).on('error', function(error1) {
+                                            var message = {
+                                                response : false,
+                                                message  : 'Something went wrong!'
+                                            }
+                                            res.write(JSON.stringify(message));
+                                            res.end();
+                                        });
+                                    }
+                                    else
+                                    {
+                                        var message = {
+                                            response : false,
+                                            message  : 'Meeting is over now.'
+                                        }
+                                        res.write(JSON.stringify(message));
+                                        res.end();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var sqlUpdate = "UPDATE zc_meeting set mt_cstatus = ? WHERE mt_id = ?"; 
+                                db.query(sqlUpdate, ['Suspend', req.body.id], function(err1, result1) {
+                                    if(result1.affectedRows)
+                                    {
+                                        var message = {
+                                            response  : true,
+                                            message   : 'Meeting time reduce',
+                                            type      : 'suspended',
+                                            action    : 'Suspend',
+                                            meetingId : req.body.id,
+                                            amessage  : 'Sorry, Your meeting has been suspended by Host.'
+                                        }
+                                        res.write(JSON.stringify(message));
+                                        res.end();
+                                    }
+                                    else
+                                    {
+                                        var message = {
+                                            response : false,
+                                            message  : 'Something went wrong!'
+                                        }
+                                        res.write(JSON.stringify(message));
+                                        res.end();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    var hms = result[0].mt_duration;
+                    var a = hms.split(':');
+                    var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+                    
+                    if(seconds > req.body.seconds)
+                    {
+                        var totalSeconds = seconds-req.body.seconds;
+
+                        phours = Math.floor(totalSeconds / 3600);
+                        totalSeconds %= 3600;
+                        pminutes = Math.floor(totalSeconds / 60);
+                        pseconds = totalSeconds % 60;
+                        ptime = phours+':'+pminutes+':'+pseconds;
+
+                        var myTime = result[0].mt_date + ' ' + result[0].mt_time;
+                        var time = moment().tz("America/New_York").format('YYYY-MM-DD hh:mm:ss A');
+                        var startSeconds = moment.utc(moment(myTime,"YYYY-MM-DD hh:mm:ss A").diff(moment(time,"YYYY-MM-DD hh:mm:ss A"))).format("HH:mm:ss");
+                        var es = startSeconds.split(':');
+                        var afterSecondsTimer  = ((+es[0]) * 60 * 60 + (+es[1]) * 60 + (+es[2]));
+                        
+                        var sqlUpdate = "UPDATE zc_meeting set mt_duration = ? WHERE mt_id = ?"; 
+                        db.query(sqlUpdate, [ptime, req.body.id], function(err1, result1) {
+                            if(result1.affectedRows)
+                            {
+                                var message = {
+                                    response  : true,
+                                    message   : 'Meeting time reduce',
+                                    seconds   : seconds-req.body.seconds,
+                                    type      : 'pause',
+                                    after     : (afterSecondsTimer * 1000),
+                                }
+                                res.write(JSON.stringify(message));
+                                res.end();
+                            }
+                            else
+                            {
+                                var message = {
+                                    response : false,
+                                    message  : 'Something went wrong!'
+                                }
+                                res.write(JSON.stringify(message));
+                                res.end();
+                            }
+                        });
+                    }
+                    else
+                    {
+                        var sqlUpdate = "UPDATE zc_meeting set mt_cstatus = ? WHERE mt_id = ?"; 
+                        db.query(sqlUpdate, ['Suspend', req.body.id], function(err1, result1) {
+                            if(result1.affectedRows)
+                            {
+                                var message = {
+                                    response  : true,
+                                    message   : 'Meeting time reduce',
+                                    type      : 'suspended',
+                                    action    : 'Suspend',
+                                    meetingId : req.body.id,
+                                    amessage  : 'Sorry, Your meeting has been suspended by Host.'
+                                }
+                                res.write(JSON.stringify(message));
+                                res.end();
+                            }
+                            else
+                            {
+                                var message = {
+                                    response : false,
+                                    message  : 'Something went wrong!'
+                                }
+                                res.write(JSON.stringify(message));
+                                res.end();
+                            }
+                        });
+                    }
+                    
+                }
             }
         }
     });

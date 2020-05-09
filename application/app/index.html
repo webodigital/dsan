@@ -133,8 +133,7 @@
     var futureTimer;
 
     var meetingId = 0;
-    console.log(meetingId);
-    const socket = io.connect('http://127.0.0.1:3000');
+    const socket = io.connect('http://35.245.107.78');
     const timer = $('#timer')
     const s = $(timer).find('.seconds')
     const m = $(timer).find('.minutes')
@@ -303,42 +302,79 @@
 
           meetingPassword = $("#meetingPassword").val();
           $.ajax({
-              url: "http://127.0.0.1:3000/api/meeting-details",
+              url: "http://35.245.107.78/api/meeting-details",
               data: {meetingId: meetingId, meetingPassword: meetingPassword},
               type: 'POST',
               success: function(response) {
                 response = JSON.parse(response);
+
                 if (response.response) 
                 {
-                  meetingId = response.data.mt_id;
-                  $("#danger").removeClass('show').addClass('hide');
-                  $("#success").html(response.message);
-                  $("#success").removeClass('hide').addClass('show');
-                  setTimeout(function() {
-                    $("#success").removeClass('show').addClass('hide');
-                    $("#myMeetingIdModal").modal('hide');
-                    $("#msgDanger").removeClass('show').addClass('hide');
-                    $("#msgSuccess").html(response.message);
-                    $("#msgSuccess").removeClass('hide').addClass('show');
-                    if(response.instant)
-                    {
-                      $("#messageModal").modal('show');
-                    }
-                  }, 1000);
-
-                  setTimeout(function() {
-                    $("#messageModal").modal('hide');
-                  }, response.afterstart);
-
-                  if(response.instant)
+                  if(response.type == 'scheduler')
                   {
-                    futureTimer = setTimeout(function() {
-                      startClock(response.mseconds)	
-                    }, response.afterstart);
+                    meetingId = response.data.mt_id;
+                    if(response.cstatus)
+                    {
+                      $("#danger").removeClass('show').addClass('hide');
+                      $("#success").html(response.message);
+                      $("#success").removeClass('hide').addClass('show');
+                      setTimeout(function() {
+                        $("#success").removeClass('show').addClass('hide');
+                        $("#myMeetingIdModal").modal('hide');
+                        $("#msgDanger").removeClass('show').addClass('hide');
+                        $("#msgSuccess").html(response.message);
+                        $("#msgSuccess").removeClass('hide').addClass('show');
+                        if(response.instant)
+                        {
+                          startClock(response.mseconds) 
+                          clear(interval)
+                        }
+                      }, 1000);
+
+                      if(response.instant)
+                      {
+                        futureTimer = setTimeout(function() {
+                          countdown()
+                        }, response.afterstart);
+                      }
+                      else
+                      {
+                        startClock(response.mseconds)	
+                      }
+                    }
+                    else
+                    {
+                      $("#danger").removeClass('show').addClass('hide');
+                      $("#success").html(response.message);
+                      $("#success").removeClass('hide').addClass('show');
+                      setTimeout(function() {
+                        $("#success").removeClass('show').addClass('hide');
+                        $("#myMeetingIdModal").modal('hide');
+                        $("#msgDanger").removeClass('show').addClass('hide');
+                        $("#msgSuccess").html(response.message);
+                        $("#msgSuccess").removeClass('hide').addClass('show');
+                          startClock(response.mseconds) 
+                          clear(interval)
+                      }, 1000);
+                    }
                   }
                   else
                   {
-                    startClock(response.mseconds)	
+                    meetingId = response.meetingId;
+                    $("#danger").removeClass('show').addClass('hide');
+                    $("#success").html(response.message);
+                    $("#success").removeClass('hide').addClass('show');
+                    if(response.action == 'Pause')
+                    {
+                      startClock(response.second)
+                      clear(interval)
+                    }
+                    else
+                    {
+                      startClock(response.second)
+                    }
+                    $("#success").removeClass('show').addClass('hide');
+                    $("#myMeetingIdModal").modal('hide');
                   }
                 }
                 else 
@@ -385,6 +421,7 @@
     socket.on('client-meeting-monitor', (data) => {
       
       response = JSON.parse(data);
+
       if(meetingId == response.meetingId)
       {
         if(response.action == 'Pause')
@@ -424,18 +461,15 @@
           if(response.time)
           {
             clearInterval(futureTimer);
-            clear(interval);
+            startClock(response.seconds) 
+            clear(interval)
             $("#messageModal").modal('hide');
             $("#msgFutureDanger").removeClass('show').addClass('hide');
             $("#msgFutureSuccess").html(response.imessage);
             $("#msgFutureSuccess").removeClass('hide').addClass('show');
-            $("#messageFutureModal").modal('show');
-            setTimeout(function() {
-              $("#messageFutureModal").modal('hide');
-            }, response.after);
 
             futureTimer = setTimeout(function() {
-              startClock(response.seconds) 
+              countdown() 
             }, response.after);
           }
           else
@@ -472,6 +506,102 @@
       }
     });
 
+    socket.on('client-meeting-monitor-control', (data) => {
+      response = JSON.parse(data);
+      if(meetingId == response.meetingId)
+      {
+        if(response.type == 'running')
+        { 
+          if(response.instant)
+          {
+            clear(interval)
+            startClock(response.second)
+          }  
+          else
+          {
+            startClock(response.second)
+            clear(interval)
+          }
+        }
+        else
+        {
+          startClock(response.seconds) 
+          clear(interval)
+        }
+      }
+    });
+
+    socket.on('client-stopwatch-meeting-add', (data) => {
+      response = JSON.parse(data);
+      if(meetingId == response.meetingId)
+      {
+        startClock(response.second)
+        clear(interval)
+      }
+    });
+
+    socket.on('client-stopwatch-meeting-update', (data) => {
+      response = JSON.parse(data);
+      if(meetingId == response.meetingId)
+      {
+        if(response.type == 'Pause')
+        {
+          startClock(response.second)
+          clear(interval)
+        }
+        else if(response.type == 'On')
+        {
+          startClock(response.second)
+        }
+        else
+        {
+          clear(interval)
+
+          $("#msgSuccess").removeClass('show').addClass('hide');
+          $("#msgDanger").html(response.message);
+          $("#msgDanger").removeClass('hide').addClass('show');
+          $("#messageModal").modal('show');
+          setTimeout(function() {
+            $("#msgDanger").removeClass('show').addClass('hide');
+            $("#messageModal").modal('hide');
+            location.reload();
+          }, 10000);
+        }
+      }
+    });
+
+    socket.on('client-stopwatch-meeting-monitor', (data) => {
+      response = JSON.parse(data);
+      if(meetingId == response.meetingId)
+      {
+        
+        if(response.action == 'Pause')
+        {
+          clear(interval)
+        }
+        
+        if(response.action == 'On')
+        {
+          countdown()
+        }
+        
+        if(response.action == "Suspend")
+        {
+          clear(interval)
+
+          $("#msgSuccess").removeClass('show').addClass('hide');
+          $("#msgDanger").html(response.message);
+          $("#msgDanger").removeClass('hide').addClass('show');
+          $("#messageModal").modal('show');
+          setTimeout(function() {
+            $("#msgDanger").removeClass('show').addClass('hide');
+            $("#messageModal").modal('hide');
+            location.reload();
+          }, 10000);
+        }
+      }
+    });
+    
 
 </script>
 </body>

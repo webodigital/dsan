@@ -70,6 +70,22 @@ io.on('connection', (socket) => {
     io.emit('client-meeting-future-update', data);
   });
 
+  socket.on('meeting-monitor-control', (data) => {
+    io.emit('client-meeting-monitor-control', data);
+  });
+
+  socket.on('stopwatch-meeting-add', (data) => {
+    io.emit('client-stopwatch-meeting-add', data);
+  });
+
+  socket.on('stopwatch-meeting-update', (data) => {
+    io.emit('client-stopwatch-meeting-update', data);
+  });
+
+  socket.on('stopwatch-meeting-monitor', (data) => {
+    io.emit('client-stopwatch-meeting-monitor', data);
+  });
+
 });
 
 

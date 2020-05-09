@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var meeting_ctrl = require('../controller/meeting_ctrl');
+var stopwatch_ctrl = require('../controller/stopwatch_ctrl');
 
 router.get('/', function(req, res, next) {
     if(req.session.is_auth)
@@ -10,6 +11,16 @@ router.get('/', function(req, res, next) {
     else{
       res.redirect('/')
     }
+});
+
+router.get('/stopwatch', function(req, res, next) {
+  if(req.session.is_auth)
+  {
+    res.render('templates/stopwatch.ejs', { path: '../components/meeting/stopwatch', base_url: req.protocol + '://' + req.get('host'), title: 'Stopwatch', vendor: req.app.locals.vendorName, username: req.session.userName });
+  }
+  else{
+    res.redirect('/')
+  }
 });
 
 router.post('/list', function(req,res) {
@@ -22,11 +33,31 @@ router.post('/list', function(req,res) {
   }
 })
 
+router.post('/stopwatch/list', function(req,res) {
+  if(req.session.is_auth)
+  {
+    stopwatch_ctrl.list(req,res)
+  }
+ else{
+   res.redirect('/')
+  }
+})
+
 
 router.post('/add', function(req,res) {
   if(req.session.is_auth)
   {
     meeting_ctrl.add(req,res)
+  }
+  else{
+    res.redirect('/')
+  }
+})
+
+router.post('/stopwatch/add', function(req,res) {
+  if(req.session.is_auth)
+  {
+    stopwatch_ctrl.add(req,res)
   }
   else{
     res.redirect('/')
@@ -83,6 +114,16 @@ router.post('/monitor', function(req,res) {
   }
 })
 
+router.post('/stopwatch/monitor', function(req,res) {
+  if(req.session.is_auth)
+  {
+    stopwatch_ctrl.monitor(req,res)
+  }
+  else{
+    res.redirect('/')
+  }
+})
+
 router.post('/change-cstatus', function(req,res) {
   if(req.session.is_auth)
   {
@@ -93,10 +134,21 @@ router.post('/change-cstatus', function(req,res) {
   }
 })
 
-router.post('/update-monitor-time', function(req,res) {
-  meeting_ctrl.updateMonitorTime(req,res)
+router.post('/stopwatch/update-monitor-time', function(req,res) {
+  stopwatch_ctrl.updateMonitorTime(req, res)
 })
 
+router.post('/stopwatch/add-monitor-time', function(req, res) {
+    stopwatch_ctrl.addMonitorTime(req, res)
+})
+
+router.post('/stopwatch/control-action', function(req, res) {
+  stopwatch_ctrl.controlAction(req, res)
+})
+
+router.post('/stopwatch/reuse', function(req, res) {
+  stopwatch_ctrl.reUse(req, res)
+})
 
 
 module.exports = router;

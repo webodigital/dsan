@@ -36,17 +36,17 @@
 					<div class="m-subheader ">
 						<div class="d-flex align-items-center">
 							<div class="mr-auto">
-								<h3 class="m-subheader__title m-subheader__title--separator">Schedule Meeting</h3>
+								<h3 class="m-subheader__title m-subheader__title--separator">Stopwatch Meeting</h3>
 								<ul class="m-subheader__breadcrumbs m-nav m-nav--inline">
 									<li class="m-nav__item m-nav__item--home">
-										<a href="<%= base_url %>/meeting" class="m-nav__link m-nav__link--icon">
+										<a href="<%= base_url %>/meeting/stopwatch" class="m-nav__link m-nav__link--icon">
 											<i class="m-nav__link-icon la la-home"></i>
 										</a>
 									</li>
 									<li class="m-nav__separator">-</li>
 									<li class="m-nav__item">
 										<a href="" class="m-nav__link">
-											<span class="m-nav__link-text">Schedule Meeting</span>
+											<span class="m-nav__link-text">Stopwatch Meeting</span>
 										</a>
 									</li>
 								</ul>
@@ -86,18 +86,6 @@
 							meetingId: {
 								required: true
 							},
-							meetingDate: {
-								required: true
-							},
-							meetingTime: {
-								required: true
-							},
-							meetingDuration: {
-								required: true
-							},
-							meetingParticipant: {
-								number: true
-							},
 							meetingPassword: {
 								required: true
 							},
@@ -109,18 +97,6 @@
 						messages: {
 							meetingId: {
 								required: "Please enter meeting ID"
-							},
-							meetingDate: {
-								required: "Please select meeting date"
-							},
-							meetingTime: {
-								required: "Please select meeting time"
-							},
-							meetingDuration: {
-								required: "Please enter meeting duration"
-							},
-							meetingParticipant: {
-								number: "Please enter valid number"
 							},
 							meetingPassword: {
 								required: "Please enter password"
@@ -141,24 +117,20 @@
 							var data 				= {};
 							data.meetingName 		= $("#meetingName").val();
 							data.meetingId 			= $("#meetingId").val();	
-							data.meetingDate 		= $("#meetingDate").val();
-							data.meetingTime 		= $("#meetingTime").val();
-							data.meetingDuration 	= $("#meetingDuration").val();
-							data.meetingParticipant = $("#meetingParticipant").val();
 							data.meetingPassword 	= $("#meetingPassword").val();
 						
 							$.ajax({
 								type: 'POST',
 								data: JSON.stringify(data),
 								contentType: 'application/json',
-								url: '<%= base_url %>/meeting/add',
+								url: '<%= base_url %>/meeting/stopwatch/add',
 								success: function(data) 
 								{
 									response = JSON.parse(data);
 									if(response.response)
 									{   
 										$('#addMeetingForm').trigger("reset");
-										$(".meeting_list").mDatatable("reload");
+										$(".stopwatch_meeting_list").mDatatable("reload");
 										toastr.success(response.message);
 										setTimeout(function() {
 											$('#addMeetingModal').modal('hide');
@@ -224,11 +196,11 @@
 			var t;
 			var DatatableRemoteAjaxDemo= {
 				init:function() {
-					t=$(".meeting_list").mDatatable( {
+					t=$(".stopwatch_meeting_list").mDatatable( {
 						data: {
 							type:"remote", source: {
 								read: {
-									url:"<%= base_url %>/meeting/list", map:function(t) {
+									url:"<%= base_url %>/meeting/stopwatch/list", map:function(t) {
 										var e=t;
 										return void 0!==t.data&&(e=t.data), e
 									}
@@ -257,88 +229,58 @@
 				  			{
 								field:"mt_name", title:"Name", filterable:!1, textAlign: "center", sortable: !1
 							},
+							// {
+							// 	field:"Date", title:"Date", sortable:!1, overflow:"visible", template:function(t, e, a) {
+							// 		var date = new Date(t.mt_date);
+							// 		return date.toISOString().slice(0,10);
+							// 	}
+							// },
+				  			// {
+							// 	field:"mt_time", title:"Time", filterable:!1, textAlign: "center", sortable: !1
+							// },
+				  			// {
+							// 	field:"mt_duration", title:"Duration", filterable:!1, textAlign: "center", sortable: !1
+							// },
+				  			// {
+							// 	field:"mt_participant", title:"Participant", filterable:!1, textAlign: "center", sortable: !1
+							// },
 							{
-								field:"Date", title:"Date", sortable:!1, overflow:"visible", template:function(t, e, a) {
-									var date = new Date(t.mt_date);
-									return date.toISOString().slice(0,10);
-								}
-							},
-				  			{
-								field:"mt_time", title:"Time", filterable:!1, textAlign: "center", sortable: !1
-							},
-				  			{
-								field:"mt_duration", title:"Duration", filterable:!1, textAlign: "center", sortable: !1
-							},
-				  			{
-								field:"mt_participant", title:"Participant", filterable:!1, textAlign: "center", sortable: !1
-							},
-							{
-								field:"Status", title:"Status", sortable:!1, overflow:"visible", template:function(t, e, a) {
+								field:"Reuse", title:"Reuse", sortable:!1, overflow:"visible", template:function(t, e, a) {
 									
-									if(t.mt_status == 'Active')
-									{
-										var q = new Date();
-										var currentDate = q.getFullYear() + "-" + (q.getMonth()+1) + "-" + q.getDate();
-										var date   = new Date(currentDate);
-										var mydate = new Date(t.mt_date);
-
-										if(date  >mydate)
-										{
-											return '<a href="javascript:void(0)" class="btn btn-outline-primary m-btn m-btn--icon btn-lg m-btn--icon-only m-btn--pill m-btn--air"><i class="la la-history"></i></a>'
-										}
-										else
-										{
-											return '<a href="javascript:void(0)" class="btn btn-outline-primary m-btn m-btn--icon btn-lg m-btn--icon-only m-btn--pill m-btn--air"  onclick="changeMeetingStatus('+ t.mt_id +')"><i class="la la-history"></i></a>'
-										}										
-									}
-									else
-									{
-										var q = new Date();
-										var currentDate = q.getFullYear() + "-" + (q.getMonth()+1) + "-" + q.getDate();
-										var date   = new Date(currentDate);
-										var mydate = new Date(t.mt_date);
-										if(date > mydate)
-										{
-											return '<a href="javascript:void(0)" class="btn btn-outline-brand m-btn m-btn--icon btn-lg m-btn--icon-only m-btn--pill m-btn--air" ><i class="la la-power-off"></i></a>'
-										}
-										else
-										{
-											return '<a href="javascript:void(0)" class="btn btn-outline-brand m-btn m-btn--icon btn-lg m-btn--icon-only m-btn--pill m-btn--air" onclick="changeMeetingStatus('+ t.mt_id +')"><i class="la la-power-off"></i></a>'
-										}
-									}
-									
+									return '<a href="javascript:void(0)" class="btn btn-outline-brand m-btn m-btn--icon btn-lg m-btn--icon-only m-btn--pill m-btn--air" onclick="reuseMeeting('+ t.mt_id +')"><i class="flaticon-refresh"></i></a>'
+								
 								}
 							},
-							{
-								field:"Actions", title:"Actions", sortable:!1, overflow:"visible", template:function(t, e, a){
-									var q = new Date();
-									var currentDate = q.getFullYear() + "-" + (q.getMonth()+1) + "-" + q.getDate();
-									var date   = new Date(currentDate);
-									var mydate = new Date(t.mt_date);
-									if(date  >mydate)
-									{
-										return '<a href="javascript:void(0)" class="m-portlet__nav-link btn m-btn m-btn--hover-brand m-btn--icon m-btn--icon-only m-btn--pill" title="Update Meeting"><i class="la la-edit"></i></a>'
-									}
-									else
-									{
-										return '<a href="javascript:void(0)" class="m-portlet__nav-link btn m-btn m-btn--hover-brand m-btn--icon m-btn--icon-only m-btn--pill" title="Update Meeting" onclick="editMeeting('+ t.mt_id +')"><i class="la la-edit"></i></a>'
-									}
-								}
-							},
+							// {
+							// 	field:"Actions", title:"Actions", sortable:!1, overflow:"visible", template:function(t, e, a){
+							// 		var q = new Date();
+							// 		var currentDate = q.getFullYear() + "-" + (q.getMonth()+1) + "-" + q.getDate();
+							// 		var date   = new Date(currentDate);
+							// 		var mydate = new Date(t.mt_date);
+							// 		if(date  >mydate)
+							// 		{
+							// 			return '<a href="javascript:void(0)" class="m-portlet__nav-link btn m-btn m-btn--hover-brand m-btn--icon m-btn--icon-only m-btn--pill" title="Update Meeting"><i class="la la-edit"></i></a>'
+							// 		}
+							// 		else
+							// 		{
+							// 			return '<a href="javascript:void(0)" class="m-portlet__nav-link btn m-btn m-btn--hover-brand m-btn--icon m-btn--icon-only m-btn--pill" title="Update Meeting" onclick="editMeeting('+ t.mt_id +')"><i class="la la-edit"></i></a>'
+							// 		}
+							// 	}
+							// },
 							{
 								field:"Monitor", title:"Monitor", sortable:!1, overflow:"visible", template:function(t, e, a){
-									var q = new Date();
-									var currentDate = q.getFullYear() + "-" + (q.getMonth()+1) + "-" + q.getDate();
-									var date   = new Date(currentDate);
-									var mydate = new Date(t.mt_date);
-									if(date  >mydate)
-									{
-										return '<a href="javascript:void(0);" ><img alt="Monitor" src="<%= base_url %>/demo/default/base/clock_logo.jpg" style="width: 75px;"></a>'
-									}
-									else
-									{
+									// var q = new Date();
+									// var currentDate = q.getFullYear() + "-" + (q.getMonth()+1) + "-" + q.getDate();
+									// var date   = new Date(currentDate);
+									// var mydate = new Date(t.mt_date);
+									// if(date  >mydate)
+									// {
+										// return '<a href="javascript:void(0);" ><img alt="Monitor" src="<%= base_url %>/demo/default/base/clock_logo.jpg" style="width: 75px;"></a>'
+									// }
+									// else
+									// {
 										return '<a href="javascript:void(0);" onclick="monitor('+ t.mt_id +')" ><img alt="Monitor" src="<%= base_url %>/demo/default/base/clock_logo.jpg" style="width: 75px;"></a>'
-									}
+									// }
 								}
 							}
 						]
@@ -368,7 +310,7 @@
 
 			var BootstrapTimepicker= {
 				init:function() {
-					$("#meetingDuration, #editMeetingDuration, #monitorMeetingDuration").timepicker( {
+					$("#meetingDuration, #editMeetingDuration, #monitorMeetingDuration, #monitorMeetingMainDuration").timepicker( {
 						minuteStep: 1, showSeconds: !0, showMeridian: !1, snapToStep: !0, autoclose: !0
 					}
 					),
@@ -386,6 +328,50 @@
 				BootstrapDatepicker.init()
 				BootstrapTimepicker.init()
 			});	
+
+			function reuseMeeting(id)
+			{
+				swal({
+					title: "Are you sure?",
+					text: "You won't be able to revert this!",
+					type: "warning",
+					showCancelButton: !0,
+					confirmButtonText: "Yes, reuse it!"
+				}).then(function(e) {
+					if(e.value)
+					{
+						var data = {};
+						data.type = 'reuse';
+						data.id = id;	
+					
+						$.ajax({
+							type: 'POST',
+							data: JSON.stringify(data),
+							contentType: 'application/json',
+							url: '<%= base_url %>/meeting/stopwatch/reuse',
+							success: function(data) 
+							{
+								console.log(data);
+								response = JSON.parse(data);
+								if(response.response)
+								{   
+									// socket.emit('meeting-status', data);
+									$(".stopwatch_meeting_list").mDatatable("reload");
+									toastr.success(response.message);
+								}
+								else
+								{      
+									toastr.error(response.message);
+								}
+							},
+							error:function(data)
+							{
+								toastr.error("Something went wrong!");
+							}
+						});
+					}
+				})
+			}
 			
 			function changeMeetingStatus(id)
 			{
@@ -404,7 +390,7 @@
 						if(response.response)
 						{   
 							socket.emit('meeting-status', data);
-							$(".meeting_list").mDatatable("reload");
+							$(".stopwatch_meeting_list").mDatatable("reload");
 							toastr.success(response.message);
 						}
 						else
@@ -524,7 +510,7 @@
 									{	
 										console.log(data);
 										socket.emit('meeting-future-update', data);   
-										$(".meeting_list").mDatatable("reload");
+										$(".stopwatch_meeting_list").mDatatable("reload");
 										toastr.success(response.message);
 										setTimeout(function() {
 											$('#editMeetingModal').modal('hide');
@@ -561,42 +547,56 @@
 					type: 'POST',
 					data: JSON.stringify(data),
 					contentType: 'application/json',
-					url: '<%= base_url %>/meeting/monitor',
+					url: '<%= base_url %>/meeting/stopwatch/monitor',
 					success: function(data) 
 					{
 						response = JSON.parse(data);
 						if(response.response)
-						{   
-							toastr.success(response.message);
-							if(response.instant)
+						{  
+							
+							if(response.action == 'Pause')
 							{
-								$("#monitorMeetingId").val(response.data.mt_id);
-								$("#monitorMeetingTitle").html(response.data.mt_name+' -- '+response.data.mt_mid);
-								$("#monitorMeetingModal").modal('show');
-
-								startClock(response.mseconds)
+								startClock(response.second)
 								clear(interval)
-
-								futureTimer = setTimeout(function() {
-									countdown()
-								}, response.afterstart);
 							}
 							else
 							{
-								if(response.action == 'pause')
-								{
-									startClock(response.mseconds)
-									clear(interval)
-								}
-								else
-								{
-									startClock(response.mseconds)
-								}								
-								$("#monitorMeetingId").val(response.data.mt_id);
-								$("#monitorMeetingTitle").html(response.data.mt_name+' -- '+response.data.mt_mid);
-								$("#monitorMeetingModal").modal('show');
+								startClock(response.second)
 							}
-							$(".meeting_list").mDatatable("reload");
+
+							$("#monitorMeetingId").val(response.meetingId);
+							$("#monitorMeetingModal").modal('show'); 
+
+							// toastr.success(response.message);
+							// if(response.instant)
+							// {
+							// 	$("#monitorMeetingId").val(response.data.mt_id);
+							// 	$("#monitorMeetingTitle").html(response.data.mt_name+' -- '+response.data.mt_mid);
+							// 	$("#monitorMeetingModal").modal('show');
+
+							// 	startClock(response.mseconds)
+							// 	clear(interval)
+
+							// 	futureTimer = setTimeout(function() {
+							// 		countdown()
+							// 	}, response.afterstart);
+							// }
+							// else
+							// {
+							// 	if(response.action == 'pause')
+							// 	{
+							// 		startClock(response.mseconds)
+							// 		clear(interval)
+							// 	}
+							// 	else
+							// 	{
+							// 		startClock(response.mseconds)
+							// 	}								
+							// 	$("#monitorMeetingId").val(response.data.mt_id);
+							// 	$("#monitorMeetingTitle").html(response.data.mt_name+' -- '+response.data.mt_mid);
+							// 	$("#monitorMeetingModal").modal('show');
+							// }
+							$(".stopwatch_meeting_list").mDatatable("reload");
 						}
 						else
 						{      
@@ -703,15 +703,14 @@
 					type: 'POST',
 					data: JSON.stringify(data),
 					contentType: 'application/json',
-					url: '<%= base_url %>/meeting/change-cstatus',
+					url: '<%= base_url %>/meeting/stopwatch/control-action',
 					success: function(data) 
 					{
 						response = JSON.parse(data);
 						if(response.response)
 						{  
+							socket.emit('stopwatch-meeting-monitor', data);
 							countdown()
-							socket.emit('meeting-monitor', data);
-							toastr.success(response.message);
 						}
 						else
 						{      
@@ -782,15 +781,14 @@
 					type: 'POST',
 					data: JSON.stringify(data),
 					contentType: 'application/json',
-					url: '<%= base_url %>/meeting/change-cstatus',
+					url: '<%= base_url %>/meeting/stopwatch/control-action',
 					success: function(data) 
 					{
 						response = JSON.parse(data);
 						if(response.response)
 						{   
+							socket.emit('stopwatch-meeting-monitor', data);
 							clear(interval)
-							socket.emit('meeting-monitor', data);
-							toastr.success(response.message);
 						}
 						else
 						{      
@@ -843,13 +841,13 @@
 					type: 'POST',
 					data: JSON.stringify(data),
 					contentType: 'application/json',
-					url: '<%= base_url %>/meeting/change-cstatus',
+					url: '<%= base_url %>/meeting/stopwatch/control-action',
 					success: function(data) 
 					{
 						response = JSON.parse(data);
 						if(response.response)
 						{   
-							socket.emit('meeting-monitor', data);
+							socket.emit('stopwatch-meeting-monitor', data);
 							toastr.error(response.message);
 							$("#monitorMeetingModal").modal('hide');
 						}
@@ -947,48 +945,64 @@
 						type: 'POST',
 						data: JSON.stringify(data),
 						contentType: 'application/json',
-						url: '<%= base_url %>/meeting/update-monitor-time',
+						url: '<%= base_url %>/meeting/stopwatch/update-monitor-time',
 						success: function(data) 
 						{
 							response = JSON.parse(data);
 							if(response.response)
 							{
-								if(response.type == 'running')
-								{ 
-									if(response.instant)
-									{
-										clear(interval)
-										startClock(response.second)
-										socket.emit('meeting-monitor-control', data);
-									}  
-									else
-									{
-										startClock(response.second)
-										clear(interval)
-										socket.emit('meeting-monitor-control', data);
-									}
-									toastr.success(response.message);
-								}
-								else if (response.type == 'suspended') {
+								socket.emit('stopwatch-meeting-update', data);
+								if(response.type == 'Pause')
+								{
+									startClock(response.second)
 									clear(interval)
-									clearInterval(futureTimer);
-									socket.emit('meeting-monitor', data);
-									toastr.error(response.message);
-									$("#monitorMeetingModal").modal('hide');
+								}
+								else if(response.type == 'On')
+								{
+									startClock(response.second)
 								}
 								else
 								{
 									clear(interval)
-									clearInterval(futureTimer);
-									startClock(response.seconds) 
-									clear(interval)
-									socket.emit('meeting-monitor-control', data);
-									futureTimer = setTimeout(function() {
-										countdown()
-									}, response.after);
-									toastr.success(response.message);
+									$("#monitorMeetingModal").modal('hide');
+									toastr.error(response.message);
 								}
-								$(".meeting_list").mDatatable("reload");
+								// if(response.type == 'running')
+								// { 
+								// 	if(response.instant)
+								// 	{
+								// 		clear(interval)
+								// 		startClock(response.second)
+								// 		socket.emit('meeting-monitor-control', data);
+								// 	}  
+								// 	else
+								// 	{
+								// 		startClock(response.second)
+								// 		clear(interval)
+								// 		socket.emit('meeting-monitor-control', data);
+								// 	}
+								// 	toastr.success(response.message);
+								// }
+								// else if (response.type == 'suspended') {
+								// 	clear(interval)
+								// 	clearInterval(futureTimer);
+								// 	socket.emit('meeting-monitor', data);
+								// 	toastr.error(response.message);
+								// 	$("#monitorMeetingModal").modal('hide');
+								// }
+								// else
+								// {
+								// 	clear(interval)
+								// 	clearInterval(futureTimer);
+								// 	startClock(response.seconds) 
+								// 	clear(interval)
+								// 	socket.emit('meeting-monitor-control', data);
+								// 	futureTimer = setTimeout(function() {
+								// 		countdown()
+								// 	}, response.after);
+								// 	toastr.success(response.message);
+								// }
+								// $(".meeting_list").mDatatable("reload");
 							}
 							else
 							{      
@@ -998,6 +1012,49 @@
 						error:function(data)
 						{
 							toastr.error("Something went wrong!");
+						}
+					});
+				}
+				else
+				{
+					toastr.error("Something went wrong!");
+				}
+			}
+
+
+			function meetingMainScheduler(type) {
+				var id = $("#monitorMeetingId").val();
+				var time = $("#monitorMeetingMainDuration").val();
+				var a = time.split(':');
+				var seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
+				console.log(seconds);
+				if(seconds > 0 && id > 0)
+				{
+					var data     = {};
+					data.type    = type;
+					data.id      = id;
+					data.seconds = seconds;	
+					data.time    = time;
+				
+					$.ajax({
+						type: 'POST',
+						data: JSON.stringify(data),
+						contentType: 'application/json',
+						url: '<%= base_url %>/meeting/stopwatch/add-monitor-time',
+						success: function(data) 
+						{
+							response = JSON.parse(data);
+							if(response.response)
+							{
+								socket.emit('stopwatch-meeting-add', data);
+								startClock(response.second)
+								clear(interval)
+								toastr.success(response.message);
+							}
+							else
+							{      
+								toastr.error(response.message);
+							}
 						}
 					});
 				}
