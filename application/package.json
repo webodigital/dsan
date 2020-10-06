@@ -9,7 +9,7 @@
   "author": "Sarvesh Chauhan",
   "license": "MIT",
   "dependencies": {
-    "electron": "^8.2.3",
+    "electron": "^8.5.1",
     "express": "^4.17.1",
     "socket.io": "^2.3.0"
   }
